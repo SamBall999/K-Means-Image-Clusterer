@@ -26,19 +26,22 @@ namespace BLLSAM009 {
         Clusterer(void); // default constructor 
         ~Clusterer(void); //destructor
         int read_images(const std::string & folder_name);
+        int read_image(const std::string & image_name);
         //void to_greyscale(unsigned char * image, int size);
+        void convert_to_grey(int size);
         void to_greyscale(int index, int size);
         unsigned char colour_conversion(unsigned char R, unsigned char G, unsigned char B);
-        int * create_histogram(int index, int maxVal, int bin, int size);
+        void create_histogram(int index, int maxVal, int bin, int size);
         void get_image_features(int bin_size, int size);
         //std::vector<unsigned int> extract_keys(std::map<unsigned int, int> const& map);
         //std::vector<int> extract_values(std::map<unsigned int, int> const& map);
-        void group_in_bins(const int frequencies[], int hist[], int bin_size, int size);
+        void group_in_bins(const int frequencies[], int hist_size, int bin_size, int size);
+        //void group_in_bins(const int frequencies[], int hist[], int bin_size, int size);
         float get_euclid_distance(int hist1[], int hist2[], int hist_size);
-        void get_random_means(int num_clusters);
-        void assign_to_cluster(int size, int bin_size, int num_clusters);
+        void get_random_means(int no_clusters);
+        void assign_to_cluster(int size, int bin_size);
         void get_cluster_avg(int cluster_index, int hist_size);
-        int* get_bin_avgs(int cluster_index, int hist_size);
+        void update_bin_avgs(int cluster_index, int hist_size);
         void update_means(int hist_size);
         void k_means();
 

@@ -2,6 +2,8 @@
 #include <string>
 #include <cmath>
 #include <map>
+#include <random>
+#include <algorithm>
 #include <iostream> 
 #include <fstream>
 #include <sstream>
@@ -16,6 +18,9 @@
 
 //These greyscale images will be used for feature generation, 
 //and the features will be used to map each image to a class during classification. 
+
+
+//NB! Check that memory is managed correctly!!
 
 using namespace BLLSAM009;
 
@@ -33,14 +38,46 @@ Clusterer::~Clusterer()
 
 
 
+
+
+
 // populate the object with images 
 int Clusterer::read_images(const std::string & folder_name)
 {
-
+    int num_images = 20;//how to set this?? POSIX??
+    int sizes[num_images];
     images.clear(); //ensure image vector is empty
+    for(int i = 1; i <= num_images/2; i++)
+    {
+        std::string image_name = "./Gradient_Numbers_PPMS/eight_" + std::to_string(i) + ".ppm";
+        sizes[i-1] = read_image(image_name);
+    }
+    for(int i = 1; i <= num_images/2; i++)
+    {
+        std::string image_name = "./Gradient_Numbers_PPMS/five_" +  std::to_string(i) + ".ppm";
+        sizes[9+i] = read_image(image_name);
+    }
+    //check if all sizes are the same
+    int check_size = sizes[0];
+    for(int i = 1; i < num_images; i++)
+    {
+        if(sizes[i]!=check_size)
+        {
+            std::cout << "Error! Images have different sizes" << std::endl;
+        }
+    }
+    std::cout << "No of images read " << images.size() << std::endl;
+    return sizes[0]; //change this later
+}
+
+
+
+
+int Clusterer::read_image(const std::string & image_name)
+{
     
     std::ifstream byte_file;
-    std::string image_name = "./Gradient_Numbers_PPMS/eight_2.ppm";
+    //std::string image_name = "./Gradient_Numbers_PPMS/eight_2.ppm";
     byte_file.open(image_name, std::ios::binary); 
     if (!byte_file)
     { 
@@ -116,6 +153,19 @@ int Clusterer::read_images(const std::string & folder_name)
 }
 
 
+
+
+void Clusterer::convert_to_grey(int size)
+{
+    for(int i = 0; i < images.size(); i++)
+    {
+        to_greyscale(i, size);
+    }
+}
+
+
+
+
 void Clusterer::to_greyscale(int index, int size)
 {
         //loop through pixels in image and call colour_conversion  
@@ -130,7 +180,7 @@ void Clusterer::to_greyscale(int index, int size)
         greyscale_images.push_back(grey_image.get());
          for(int j = 0; j < (size); ++j)
         {
-            std::cout << int(grey_image[j]) << std::endl;
+            //std::cout << int(grey_image[j]) << std::endl;
         }
 
 }
@@ -139,11 +189,9 @@ void Clusterer::to_greyscale(int index, int size)
 unsigned char Clusterer::colour_conversion(unsigned char R, unsigned char G, unsigned char B)
 {
     // a single value per pixel, which ranges from 0 (black) to 255 (white)
-    std::cout << "R" << int(R) << "G"<< int(G) << "B" << int(B) << std::endl;
+    //std::cout << "R" << int(R) << "G"<< int(G) << "B" << int(B) << std::endl;
     int pixel_out =  (0.21*R) + (0.72*G) + (0.07*B);
     //unsigned char pixel_out =  (0.21*R) + (0.72*G) + (0.07*B);
-    std::cout << "PIXEL OUT " << std::endl;
-    std::cout << pixel_out << std::endl;
     //test range
     if(pixel_out < 0 )
     {
@@ -160,10 +208,21 @@ unsigned char Clusterer::colour_conversion(unsigned char R, unsigned char G, uns
 //NB this assumes size of image is constant
 void Clusterer::get_image_features(int bin_size, int size)
 {
+     std::cout << "No. of greyscale images " << greyscale_images.size()  << std::endl;
+    //image_features (greyscale_images);
     for(int i = 0; i < greyscale_images.size(); i++)
     {
         //int * hist_ptr = create_histogram(i, 255, bin_size, size);
-        image_features[i]=create_histogram(i, 255, bin_size, size); //indexing is v NB
+        //image_features[i]=create_histogram(i, 255, bin_size, size); //indexing is v NB
+        create_histogram(i, 255, bin_size, size); 
+    }
+    for(int i = 0; i < image_features.size(); i++)
+    {
+         std::cout << "Image Feature " << i << std::endl;
+        for(int j = 0; j < 85; j++)
+        {
+            std::cout << image_features[i][j] << std::endl;
+        }
     }
 }
 
@@ -171,10 +230,10 @@ void Clusterer::get_image_features(int bin_size, int size)
 
 //as an extra - draw a pop up histogram??
 //**WARNING PIXEL VALUES AREN'T ALWAYS THE SAME?? - may have fixed this
-int * Clusterer::create_histogram(int index, int maxVal, int bin, int size)
+void Clusterer::create_histogram(int index, int maxVal, int bin, int size)
 {
     //use grey_images 
-    int hist [maxVal/bin];
+    int hist_size = maxVal/bin;
     int frequencies[maxVal+1]; //initialise a zero array with positions 0-255
     for (int a = 0; a < (maxVal+1); a++) 
     {
@@ -186,31 +245,39 @@ int * Clusterer::create_histogram(int index, int maxVal, int bin, int size)
         frequencies[greyscale_images[index][i]]++;
        
     }
-    /*int test [] = {0, 0, 5, 4, 3, 7, 0, 0, 0, 10, 255};
-    for(int i = 0; i < 11; i++){
-
-        frequencies[test[i]]++;
-       
-    }*/
     //group_in_bins(frequencies, bin, maxVal);
     for (int k  = 0; k < (maxVal+1); k++)
     {
-        std::cout << "Pixel value " << k << " Count  " << frequencies[k] << std::endl;
+        //std::cout << "Pixel value " << k << " Count  " << frequencies[k] << std::endl;
     }
-     group_in_bins(frequencies, hist, 3, (maxVal+1));
+     group_in_bins(frequencies, hist_size, 3, (maxVal+1));
+     //std::cout << "Prediction" << std::endl;
+     ///image_features.at(index) = hist;
+     //std::vector<int*>::iterator it = image_features.begin();
+     //image_features.insert(it+index, hist);
+     //image_features.push_back(hist.get()); //does this go in the right position??
+     /* for(int j = 0; j < 85; j++)
+      {
+            std::cout << image_features[index][j] << std::endl;
+      }*/
+     //or just use push_back??
+     //std::cout << "This may not print" << std::endl;
      //std::unique_ptr<int[]> hist_ptr(hist);
-     return hist;
+     //int * hist_ptr = 
+     //return hist_ptr;
 
 }
 
 
-void Clusterer::group_in_bins(const int frequencies[], int hist[], int bin_size, int size)
+//void Clusterer::group_in_bins(const int frequencies[], int hist[], int bin_size, int size)
+void Clusterer::group_in_bins(const int frequencies[], int hist_size, int bin_size, int size)
 {
     //based on given bin size, group histogram array 
     std::cout << "Grouping..." << std::endl;
 
+     std::unique_ptr<int[]> hist(new int[hist_size]);
     int new_size = std::ceil(double(size)/bin_size);
-    int hist [new_size]; //initialise binned histogram
+    //int hist [new_size]; //initialise binned histogram
      for (int a = 0; a < new_size; a++) 
     {
         hist[a] = 0;
@@ -233,6 +300,45 @@ void Clusterer::group_in_bins(const int frequencies[], int hist[], int bin_size,
     {
         std::cout << "Index: " << k << " Count " << hist[k] << std::endl;
     }
+    image_features.push_back(hist.get());
+
+}
+
+
+
+
+
+
+//Commonly used initialization methods are Forgy and Random Partition
+// The Forgy method randomly chooses k observations from the dataset and uses these as the initial means. 
+void Clusterer::get_random_means(int no_clusters)
+{
+    
+   /* for(int i = 0; i < image_features.size(); i++)
+    {
+         std::cout << "Image Feature " << i << std::endl;
+        for(int j = 0; j < 85; j++)
+        {
+            std::cout << image_features[i][j] << std::endl;
+        }
+    }*/
+    
+    
+    
+    
+    std::cout << "Get initial cluster means for " << no_clusters << " clusters" << std::endl;
+    int seed = 0; //or use clock to set this
+    for (int i  = 0 ; i < no_clusters; i++)
+    {
+        std::cout << "testing" << image_features[i][0] << std::endl;
+        cluster_means.push_back(image_features[image_features.size()/2]); //choose same position in array each time
+        //std::random_shuffle(image_features.begin(), image_features.end()); //shuffle elements
+        std::shuffle(image_features.begin(), image_features.end(), std::default_random_engine(seed)); 
+    }
+    for (int i  = 0 ; i < cluster_means.size(); i++)
+    {
+        std::cout << cluster_means[i][0] << std::endl;
+    }
 
 }
 
@@ -253,19 +359,14 @@ float Clusterer::get_euclid_distance(int hist1[], int hist2[], int hist_size)
 }
 
 
-void Clusterer::get_random_means(int num_clusters)
-{
-
-}
-
-
 
 //Assign each observation to the cluster with the nearest mean: that with the least squared Euclidean distance
 //should we allow for images to be different sizes?
-void Clusterer::assign_to_cluster(int size, int bin_size, int num_clusters)
+void Clusterer::assign_to_cluster(int size, int bin_size)
 {
-    int new_size = std::ceil(double(size)/bin_size);
-    int hist [new_size];
+    int num_clusters = cluster_means.size();
+    int hist_size = std::ceil(double(size)/bin_size);
+    int hist [hist_size];
     //iterate over images and assign each to a cluster
     for(int i = 0; i < greyscale_images.size(); i++)
     {
@@ -275,7 +376,7 @@ void Clusterer::assign_to_cluster(int size, int bin_size, int num_clusters)
         int closest_cluster;
         for (int j; j < num_clusters; j++)
         {
-            float distance = get_euclid_distance(hist_ptr, cluster_means[j], new_size);
+            float distance = get_euclid_distance(hist_ptr, cluster_means[j], hist_size);
             if(distance < min)
             {
                 min = distance;
@@ -294,7 +395,8 @@ void Clusterer::update_means(int hist_size)
 {
     for (int i = 0; i < cluster_means.size(); i++)
     {
-        cluster_means[i] = get_bin_avgs(i, hist_size);
+        //cluster_means[i] = get_bin_avgs(i, hist_size);
+        update_bin_avgs(i, hist_size);
     }
 
     
@@ -310,8 +412,10 @@ void Clusterer::get_cluster_avg(int cluster_index, int hist_size)
 }
 
 
+
+ //the centroid is the point that minimizes the average squared Euclidean distance to the points in its cell?? - does this change things??
 //computes new bin averages for a single cluster mean
-int* Clusterer::get_bin_avgs(int cluster_index, int hist_size)
+void Clusterer::update_bin_avgs(int cluster_index, int hist_size)
 {
     //creat global variable holding histograms (image features) of each image
     
@@ -329,14 +433,30 @@ int* Clusterer::get_bin_avgs(int cluster_index, int hist_size)
         new_bin_avgs[i] = bin_avg;
         
     }
-    return new_bin_avgs;
+    cluster_means[cluster_index] = new_bin_avgs;
+    //return new_bin_avgs;
     
 }
 
 
+ //The algorithm has converged when the assignments no longer change.
+bool has_converged()
+{
+
+}
+
+
 //Call assign to cluster and update means iteratively until no further changes observed
+//The algorithm has converged when the assignments no longer change.
 void Clusterer::k_means()
 {
+    /*while(set of clusters is still changing)
+    {
+        int hist_size = std::ceil(double(size)/bin_size);
+        assign to cluster(hist_size);
+        update_means(hist_size);
+
+    }*/
     
 }
 
