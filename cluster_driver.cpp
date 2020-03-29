@@ -74,9 +74,11 @@ int main(int argc, char* argv[])
     BLLSAM009::Clusterer * c = new BLLSAM009::Clusterer();
     int size = c->read_images(data_folder);
     //c->to_greyscale(0, size);
-    c->to_greyscale(0, size);
+    c->convert_to_grey(size);
     //c->create_histogram(255, bin_width, size); //how to get max val ??
-    c->create_histogram(255, bin_width, size); 
+    //c->create_histogram(0, 255, bin_width, size); 
+    c->get_image_features(bin_width, size);
+    c->get_random_means(no_clusters);
 
     delete c; //clean up
     
