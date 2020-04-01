@@ -18,4 +18,4 @@ clean:
 	@rm -f *.o clusterer 
 
 run:
-	./clusterer Gradient_Numbers_PPMS -o output -k 10 -bin 1
+	./clusterer Gradient_Numbers_PPMS -o output -k 10 -bin 3

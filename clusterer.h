@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <iostream>
 
 
 //break into several classes?
@@ -18,6 +19,7 @@ namespace BLLSAM009 {
         //std::vector<std::unique_ptr<unsigned char *>> images;
         std::vector<unsigned char *> images;
         std::vector<unsigned char *>  greyscale_images;
+        std::vector<std::string>  image_names;
         std::vector<int *>  image_features;
         std::vector<int *>  cluster_means;
         std::map<int, std::vector<int>> cluster_map;
@@ -44,13 +46,18 @@ namespace BLLSAM009 {
         float get_euclid_distance(int image_index, int cluster_index, int hist_size);
         void get_random_means(int no_clusters);
         void assign_to_cluster(int size, int bin_size);
-        void get_cluster_avg(int cluster_index, int hist_size);
         void update_bin_avgs(int cluster_index, int hist_size);
         void update_means(int size, int bin_size);
         void k_means();
 
+        friend std::ostream & operator<<(std::ostream & os, const Clusterer& kt);
+        //friend ostream & operator<<(ostream & stream, const nd_vector_t & rhs);
+
 
     };
+
+
+    std::ostream & operator<<(std::ostream & os, const Clusterer& kt);
 
 
 
