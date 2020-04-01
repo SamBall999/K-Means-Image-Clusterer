@@ -79,6 +79,10 @@ int main(int argc, char* argv[])
     //c->create_histogram(0, 255, bin_width, size); 
     c->get_image_features(bin_width, size);
     c->get_random_means(no_clusters);
+    c->assign_to_cluster(size, bin_width);
+    c->update_means(size, bin_width);
+    std::cout << "updated means" << std::endl;
+    c->assign_to_cluster(size, bin_width);
 
     delete c; //clean up
     

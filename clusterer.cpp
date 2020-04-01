@@ -44,37 +44,147 @@ Clusterer::~Clusterer()
 // populate the object with images 
 int Clusterer::read_images(const std::string & folder_name)
 {
-    int num_images = 20;//how to set this?? POSIX??
+    int num_images = 20;//how to set this?? POSIX?? - set back to 20
     int sizes[num_images];
     images.clear(); //ensure image vector is empty
     for(int i = 1; i <= num_images/2; i++)
     {
-        std::string image_name = "./Gradient_Numbers_PPMS/eight_" + std::to_string(i) + ".ppm";
+        std::cout << "Gradient_Numbers_PPMS/eight_" + std::to_string(i) + ".ppm" << std::endl;
+        std::string image_name = "Gradient_Numbers_PPMS/eight_" + std::to_string(i) + ".ppm";
         sizes[i-1] = read_image(image_name);
     }
     for(int i = 1; i <= num_images/2; i++)
     {
         std::string image_name = "./Gradient_Numbers_PPMS/five_" +  std::to_string(i) + ".ppm";
-        sizes[9+i] = read_image(image_name);
+        std::cout << image_name << std::endl;
+        sizes[i] = read_image(image_name);
     }
+    //std::string image_name = "./Gradient_Numbers_PPMS/five_" + std::to_string(4) + ".ppm";
+    //sizes[0] = read_image(image_name);
     //check if all sizes are the same
     int check_size = sizes[0];
     for(int i = 1; i < num_images; i++)
     {
         if(sizes[i]!=check_size)
         {
-            std::cout << "Error! Images have different sizes" << std::endl;
+            std::cout << "Error! Images have different sizes " << check_size << " " << sizes[i] << std::endl;
         }
     }
     std::cout << "No of images read " << images.size() << std::endl;
+    write_to_output();
     return sizes[0]; //change this later
 }
 
 
 
+void Clusterer::write_to_output()
+{
+     
+     //examine contents
+     /*for(int i = 0; i < images.size(); i++)
+     {
+         std::cout << "\nimage " << i << std::endl;
+         for(int j = 0; j < (32*32*3); j++)
+         {
+             std::cout << images[i][j] << " ";
+         }
+     }*/
+     
+     
+     
+     
+     if (std::remove("out1.ppm") != 0)
+     {
+		std::cout << "File deletion failed" << std::endl;
+     }
+     
+     std::ofstream out_file;
+     out_file.open("out1.ppm", std::ios::binary); 
+     out_file << "P6" << std::endl;
+     out_file << "32 32" << std::endl;
+     out_file << "255" << std::endl;
+     char byte_data[32*32*3];
+     for (int i = 0; i < (32*32*3); i++)
+     {
+         byte_data[i] = (char)images[0][i];
+     }
+     out_file.write(byte_data, (32*32*3));
+
+
+     if (std::remove("out2.ppm") != 0)
+     {
+		std::cout << "File deletion failed" << std::endl;
+     }
+     
+     std::ofstream out_file2;
+     out_file2.open("out2.ppm", std::ios::binary); 
+     out_file2 << "P6" << std::endl;
+     out_file2 << "32 32" << std::endl;
+     out_file2 << "255" << std::endl;
+    char byte_data2[32*32*3];
+     for (int i = 0; i < (32*32*3); i++)
+     {
+         byte_data2[i] = (char)images[1][i];
+     }
+     out_file2.write(byte_data2, (32*32*3));
+
+}
+
+
+
+void Clusterer::write_grey_to_output()
+{
+     
+     if (std::remove("out_grey1.ppm") != 0)
+     {
+		std::cout << "File deletion failed" << std::endl;
+     }
+     
+     std::ofstream out_file;
+     out_file.open("out_grey1.ppm", std::ios::binary); 
+     out_file << "P6" << std::endl;
+     out_file << "32 32" << std::endl;
+     out_file << "255" << std::endl;
+     char byte_data[32*32*3];
+     int count = 0;
+     for (int i = 0; i < (32*32*3); i+=3)
+     {
+         byte_data[i] = (char)greyscale_images[0][count];
+         byte_data[i+1] = (char)greyscale_images[0][count];
+         byte_data[i+2] = (char)greyscale_images[0][count];
+         count++;
+     }
+     out_file.write(byte_data, (32*32*3));
+
+
+     if (std::remove("out_grey2.ppm") != 0)
+     {
+		std::cout << "File deletion failed" << std::endl;
+     }
+     
+     std::ofstream out_file2;
+     out_file2.open("out_grey2.ppm", std::ios::binary); 
+     out_file2 << "P6" << std::endl;
+     out_file2 << "32 32" << std::endl;
+     out_file2 << "255" << std::endl;
+    char byte_data2[32*32*3];
+    count = 0;
+     for (int i = 0; i < (32*32*3); i+=3)
+     {
+         byte_data2[i] = (char)greyscale_images[1][count];
+         byte_data2[i+1] = (char)greyscale_images[1][count];
+         byte_data2[i+2] = (char)greyscale_images[1][count];
+         count++;
+     }
+     out_file2.write(byte_data2, (32*32*3));
+
+}
+
+
 
 int Clusterer::read_image(const std::string & image_name)
 {
+    std::cout << "Reading " << image_name << std::endl;
     
     std::ifstream byte_file;
     //std::string image_name = "./Gradient_Numbers_PPMS/eight_2.ppm";
@@ -118,36 +228,29 @@ int Clusterer::read_image(const std::string & image_name)
     //std::unique_ptr<char []> byte_data(new char[size]);
     byte_file.read(byte_data, no_elements);
 
-
-
-    //TEST
-    //int test [] = {0, 0, 0, 5, 4, 3, 7, 0, 0, 0, 10, 255};
-
-    //colour conversion should return (0, 4, 1, 25)
-
-     
-    //unsigned char * image = new unsigned char[size];
-    std::unique_ptr<unsigned char []> image(new unsigned char[no_elements]);
-    for(int i = 0; i < (no_elements); ++i)
+    //std::unique_ptr<unsigned char []> image(new unsigned char[no_elements]);
+    //PERHAPS:   std::unique_ptr<unsigned char []> image((unsigned char *)byte_data);
+    //std::unique_ptr<unsigned char []> image((unsigned char *)byte_data);
+    //PERHAPS: images.push_back(std::move(image));
+    //images.push_back(std::move(image));
+    // std::cout << "NEW IMAGE " << image_name << std::endl;
+    /*for(int i = 0; i < (no_elements); ++i)
     {
-        //std::cout << static_cast<unsigned char>(byte_data[i]) << std::endl;
+        //std::cout <<  static_cast<int>(byte_data[i]) << " ";
         image[i] = static_cast<unsigned char>(byte_data[i]);
-    }
-    /*for(int i = 0; i < 12; ++i)
-    {
-        //std::cout << static_cast<unsigned char>(byte_data[i]) << std::endl;
-        image[i] = static_cast<unsigned char>(test[i]);
-        std::cout << int(image[i]) << std::endl;
+        //std::cout <<  static_cast<int>(image[i]) << " ";
     }*/
-    images.push_back(image.get()); 
+    //images.push_back(image.get()); 
+    unsigned char * image = (unsigned char *)byte_data;
+    images.push_back(image);
     byte_file.close();
 
-    delete [] byte_data; //clean up allocated memory
+
+    //clean up later?? - make into unique pointers later
+    //delete [] byte_data; //clean up allocated memory
 
     int size = width*height; //return size of greyscale image to be used in future
-
     return size;
-    //return 4;
 
     
 }
@@ -157,10 +260,12 @@ int Clusterer::read_image(const std::string & image_name)
 
 void Clusterer::convert_to_grey(int size)
 {
+     greyscale_images.clear();
     for(int i = 0; i < images.size(); i++)
     {
         to_greyscale(i, size);
     }
+     write_grey_to_output();
 }
 
 
@@ -170,18 +275,17 @@ void Clusterer::to_greyscale(int index, int size)
 {
         //loop through pixels in image and call colour_conversion  
         
-        std::unique_ptr<unsigned char []> grey_image(new unsigned char[size]);
+        //std::unique_ptr<unsigned char []> grey_image(new unsigned char[size]);
+        unsigned char * grey_image = new unsigned char[size];
         int count = 0;
+        std::cout << "NEW IMAGE " << index << std::endl;
         for (int i = 0; i < size*3; i+=3)
         {
             grey_image[count] = colour_conversion(images[index][i], images[index][i+1], images[index][i+2]);
             count++;
         }
-        greyscale_images.push_back(grey_image.get());
-         for(int j = 0; j < (size); ++j)
-        {
-            //std::cout << int(grey_image[j]) << std::endl;
-        }
+        //greyscale_images.push_back(grey_image.get());
+        greyscale_images.push_back(grey_image);
 
 }
 
@@ -214,15 +318,8 @@ void Clusterer::get_image_features(int bin_size, int size)
     {
         //int * hist_ptr = create_histogram(i, 255, bin_size, size);
         //image_features[i]=create_histogram(i, 255, bin_size, size); //indexing is v NB
+         std::cout << "Image  " << i << " " << int(greyscale_images[i][2])  << std::endl;
         create_histogram(i, 255, bin_size, size); 
-    }
-    for(int i = 0; i < image_features.size(); i++)
-    {
-         std::cout << "Image Feature " << i << std::endl;
-        for(int j = 0; j < 85; j++)
-        {
-            std::cout << image_features[i][j] << std::endl;
-        }
     }
 }
 
@@ -245,26 +342,15 @@ void Clusterer::create_histogram(int index, int maxVal, int bin, int size)
         frequencies[greyscale_images[index][i]]++;
        
     }
-    //group_in_bins(frequencies, bin, maxVal);
-    for (int k  = 0; k < (maxVal+1); k++)
+    /*for (int k  = 0; k < (maxVal+1); k++)
     {
-        //std::cout << "Pixel value " << k << " Count  " << frequencies[k] << std::endl;
-    }
+        std::cout << "Pixel value " << k << " Count  " << frequencies[k] << std::endl;
+    }*/
      group_in_bins(frequencies, hist_size, 3, (maxVal+1));
-     //std::cout << "Prediction" << std::endl;
-     ///image_features.at(index) = hist;
-     //std::vector<int*>::iterator it = image_features.begin();
-     //image_features.insert(it+index, hist);
-     //image_features.push_back(hist.get()); //does this go in the right position??
-     /* for(int j = 0; j < 85; j++)
+     /*for(int j = 0; j < 85; j++)
       {
             std::cout << image_features[index][j] << std::endl;
       }*/
-     //or just use push_back??
-     //std::cout << "This may not print" << std::endl;
-     //std::unique_ptr<int[]> hist_ptr(hist);
-     //int * hist_ptr = 
-     //return hist_ptr;
 
 }
 
@@ -273,9 +359,10 @@ void Clusterer::create_histogram(int index, int maxVal, int bin, int size)
 void Clusterer::group_in_bins(const int frequencies[], int hist_size, int bin_size, int size)
 {
     //based on given bin size, group histogram array 
-    std::cout << "Grouping..." << std::endl;
+    //std::cout << "Grouping..." << std::endl;
 
-     std::unique_ptr<int[]> hist(new int[hist_size]);
+     //std::unique_ptr<int[]> hist(new int[hist_size]);
+    int * hist = new int[hist_size];
     int new_size = std::ceil(double(size)/bin_size);
     //int hist [new_size]; //initialise binned histogram
      for (int a = 0; a < new_size; a++) 
@@ -298,9 +385,10 @@ void Clusterer::group_in_bins(const int frequencies[], int hist_size, int bin_si
     }
     for (int k  = 0; k < (new_size); k++)
     {
-        std::cout << "Index: " << k << " Count " << hist[k] << std::endl;
+        //std::cout << "Index: " << k << " Count " << hist[k] << std::endl;
     }
-    image_features.push_back(hist.get());
+    //image_features.push_back(hist.get());
+    image_features.push_back(hist);
 
 }
 
@@ -314,44 +402,50 @@ void Clusterer::group_in_bins(const int frequencies[], int hist_size, int bin_si
 void Clusterer::get_random_means(int no_clusters)
 {
     
-   /* for(int i = 0; i < image_features.size(); i++)
-    {
-         std::cout << "Image Feature " << i << std::endl;
-        for(int j = 0; j < 85; j++)
-        {
-            std::cout << image_features[i][j] << std::endl;
-        }
-    }*/
-    
-    
-    
-    
     std::cout << "Get initial cluster means for " << no_clusters << " clusters" << std::endl;
-    int seed = 0; //or use clock to set this
-    for (int i  = 0 ; i < no_clusters; i++)
+    //int seed = 0; //or use clock to set this
+    srand(time(NULL));
+    //std::vector<int> indices;
+    int no_features = image_features.size();
+    int indices[no_features];
+    for (int i = 0; i < no_features; i++)
     {
-        std::cout << "testing" << image_features[i][0] << std::endl;
-        cluster_means.push_back(image_features[image_features.size()/2]); //choose same position in array each time
-        //std::random_shuffle(image_features.begin(), image_features.end()); //shuffle elements
-        std::shuffle(image_features.begin(), image_features.end(), std::default_random_engine(seed)); 
+        indices[i] = 0;
     }
-    for (int i  = 0 ; i < cluster_means.size(); i++)
+    for (int i  = 0 ; i < no_clusters;)
+    {
+        int random = (rand() % image_features.size());
+        if(indices[random]==0)
+        {
+            indices[random] = 1;
+            cluster_means.push_back(image_features[random]); 
+            std::cout << random << " " << std::endl;
+            i++;
+        }
+    }
+    std::cout << "cluster size " <<  cluster_means.size() << std::endl;
+    //check resulting cluster means
+    /*for (int i  = 0 ; i < cluster_means.size(); i++)
     {
         std::cout << cluster_means[i][0] << std::endl;
-    }
+    }*/
 
 }
 
 
 //is this euclidean distance betwene each bin between the image hist and a certain mean?
 //OR should we use normalised euclidean distance?
-float Clusterer::get_euclid_distance(int hist1[], int hist2[], int hist_size)
+//sometimes get nan??
+//float Clusterer::get_euclid_distance(int hist1[], int hist2[], int hist_size)
+float Clusterer::get_euclid_distance(int image_index, int cluster_index, int hist_size)
 {
     
-    float sum;
+    float sum = 0;
     for (int i = 0; i < hist_size; i++)
     {
-        sum += (hist1[i] - hist2[i])^2;
+         //std::cout << "hist1 " << image_features[image_index][i] << " hist2 " << cluster_means[cluster_index][i] << std::endl;
+        sum += std::pow((image_features[image_index][i] - cluster_means[cluster_index][i]), 2);
+        //std::cout << i << std::endl;
     }
     sum = std::sqrt(sum);
     return sum;
@@ -367,23 +461,39 @@ void Clusterer::assign_to_cluster(int size, int bin_size)
     int num_clusters = cluster_means.size();
     int hist_size = std::ceil(double(size)/bin_size);
     int hist [hist_size];
+    std::cout << "cluster size " <<  cluster_means.size() << std::endl;
     //iterate over images and assign each to a cluster
+    std::cout << "hist_size " <<  hist_size << std::endl;
     for(int i = 0; i < greyscale_images.size(); i++)
     {
         //int * hist_ptr = create_histogram(i, 255, bin_size, size); //where to get maxVal from??
-        int * hist_ptr = image_features[i];
-        float min = 10000000000; //initialise to very large number
-        int closest_cluster;
-        for (int j; j < num_clusters; j++)
+        //int * hist_ptr = image_features[i];
+        float min = 100000000000; //initialise to very large number
+        int closest_cluster = -1; //set to -1 - indicates no closest cluster found
+        for (int j=0; j < num_clusters; j++)
         {
-            float distance = get_euclid_distance(hist_ptr, cluster_means[j], hist_size);
+            //std::cout << "Getting distance for image " << i << "cluster mean " << j << std::endl;
+            float distance = get_euclid_distance(i, j, hist_size);
+            //std::cout << "Distance: " << distance << std::endl;
+
             if(distance < min)
             {
                 min = distance;
                 closest_cluster = j;
             }
         }
+        std::cout << "Closest Cluster " << closest_cluster << std::endl;
         cluster_map[closest_cluster].push_back(i); //assign index of greyscale image to that cluster
+    }
+    for (auto const& x : cluster_map)
+    {
+        std::cout << "Cluster" << x.first << std::endl;
+        std::cout << "Images " << std::endl;
+        for(int i = 0; i < x.second.size(); i++)
+        {
+            std::cout << x.second[i] << " ";
+        }
+         std::cout << "\n" << std::endl;
     }
     
 }
@@ -391,8 +501,9 @@ void Clusterer::assign_to_cluster(int size, int bin_size)
 
 //Recalculate means (centroids) for observations assigned to each cluster
 //Assume mean is mean of each bin? = binwise average
-void Clusterer::update_means(int hist_size)
+void Clusterer::update_means(int size, int bin_size)
 {
+    int hist_size = std::ceil(double(size)/bin_size);
     for (int i = 0; i < cluster_means.size(); i++)
     {
         //cluster_means[i] = get_bin_avgs(i, hist_size);
@@ -465,7 +576,7 @@ void Clusterer::k_means()
 
 
 //get values in map
-/*std::vector<int> Clusterer::extract_values(std::map<unsigned int, int> const& map) 
+std::vector<int> Clusterer::extract_values(std::map<unsigned int, int> const& map) 
 {
   std::vector<int> values;
   for (auto const& element : map)
@@ -473,7 +584,7 @@ void Clusterer::k_means()
     values.push_back(element.second);
   }
   return values;
-}*/
+}
 
 
 
@@ -482,7 +593,7 @@ void Clusterer::k_means()
 
 
 //get keys in map
-/*std::vector<unsigned int> Clusterer::extract_keys(std::map<unsigned int, int> const& map) 
+std::vector<unsigned int> Clusterer::extract_keys(std::map<unsigned int, int> const& map) 
 {
   std::vector<unsigned int> keys;
   for (auto const& element : map) 
@@ -490,6 +601,6 @@ void Clusterer::k_means()
     keys.push_back(element.first);
   }
   return keys;
-}*/
+}
 
 
