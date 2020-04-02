@@ -45,7 +45,6 @@ Clusterer::~Clusterer()
 int Clusterer::read_images(const std::string & folder_name)
 {
     int num_images = 10;//how to set this?? POSIX?? - set back to 20
-    //int sizes[num_images];
     int size;
     std::string prefixes[] = {"eight", "five", "four", "nine", "one", "seven", "six", "three", "two", "zero"};
     images.clear(); //ensure image vector is empty
@@ -56,26 +55,10 @@ int Clusterer::read_images(const std::string & folder_name)
             //std::cout << "Gradient_Numbers_PPMS/" + prefixes[k] + "_" + std::to_string(i) + ".ppm" << std::endl;
             std::string image_name = "Gradient_Numbers_PPMS/" + prefixes[k] + "_" + std::to_string(i) + ".ppm";
             size  = read_image(image_name);
-            image_names.push_back(image_name);
+            std::string display_name = prefixes[k] + "_" + std::to_string(i) + ".ppm";
+            image_names.push_back(display_name);
         }
     }
-    /*for(int i = 1; i <= num_images; i++)
-    {
-        std::string image_name = "./Gradient_Numbers_PPMS/five_" +  std::to_string(i) + ".ppm";
-        std::cout << image_name << std::endl;
-        sizes[i] = read_image(image_name);
-    }*/
-    //std::string image_name = "./Gradient_Numbers_PPMS/five_" + std::to_string(4) + ".ppm";
-    //sizes[0] = read_image(image_name);
-    //check if all sizes are the same
-    /*int check_size = sizes[0];
-    for(int i = 1; i < num_images; i++)
-    {
-        if(sizes[i]!=check_size)
-        {
-            std::cout << "Error! Images have different sizes " << check_size << " " << sizes[i] << std::endl;
-        }
-    }*/
     std::cout << "No of images read " << images.size() << std::endl;
     write_to_output();
     return size; //change this later
@@ -414,7 +397,7 @@ void Clusterer::get_random_means(int no_clusters)
     }
     std::cout << "cluster size " <<  cluster_means.size() << std::endl;
     //check resulting cluster means
-    std::cout << "INITIAL CLUSTER MEANS" << std::endl;
+    /*std::cout << "INITIAL CLUSTER MEANS" << std::endl;
     for (int i  = 0 ; i < cluster_means.size(); i++)
     {
         for(int j =0; j < 85; j++)
@@ -422,7 +405,7 @@ void Clusterer::get_random_means(int no_clusters)
             std::cout << cluster_means[i][j] << ", ";
         }
         std::cout << "\n";
-    }
+    }*/
 
 
 }
@@ -451,17 +434,15 @@ float Clusterer::get_euclid_distance(int image_index, int cluster_index, int his
 
 //Assign each observation to the cluster with the nearest mean: that with the least squared Euclidean distance
 //should we allow for images to be different sizes?
-void Clusterer::assign_to_cluster(int size, int bin_size)
+void Clusterer::assign_to_cluster(int hist_size)
 {
+    std::cout << "Assigning to clusters... " << std::endl;
     cluster_map.clear(); //refresh map
     int num_clusters = cluster_means.size();
     //int hist_size = std::ceil(double(size)/bin_size);
-    int hist_size = 255/bin_size; //NB to check this??
+    //int hist_size = 255/bin_size; //NB to check this??
     //int hist [hist_size];
-    std::cout << "cluster size " <<  cluster_means.size() << std::endl;
     //iterate over images and assign each to a cluster
-    std::cout << "size and bin size" <<  size << " " << bin_size << std::endl;
-    std::cout << "hist_size " <<  hist_size << std::endl;
     for(int i = 0; i < greyscale_images.size(); i++)
     {
         //int * hist_ptr = create_histogram(i, 255, bin_size, size); //where to get maxVal from??
@@ -492,24 +473,26 @@ void Clusterer::assign_to_cluster(int size, int bin_size)
 
 //Recalculate means (centroids) for observations assigned to each cluster
 //Assume mean is mean of each bin? = binwise average
-void Clusterer::update_means(int size, int bin_size)
+void Clusterer::update_means(int hist_size)
 {
-    //int hist_size = std::ceil(double(size)/bin_size);
-    int hist_size = 255/bin_size;
+    std::cout << "Updating means..." << std::endl;
+    //int hist_size = 255/bin_size;
     for (int i = 0; i < cluster_means.size(); i++)
     {
         //cluster_means[i] = get_bin_avgs(i, hist_size);
         update_bin_avgs(i, hist_size);
     }
-    std::cout << "NEW MEANS" << std::endl;
-    for (int i  = 0 ; i < cluster_means.size(); i++)
+
+
+    //std::cout << "NEW MEANS" << std::endl;
+    /*for (int i  = 0 ; i < cluster_means.size(); i++)
     {
         for(int j =0; j < 85; j++)
         {
             std::cout << cluster_means[i][j] << ", ";
         }
         std::cout << "\n";
-    }
+    }*/
 
 }
 
@@ -522,20 +505,25 @@ void Clusterer::update_bin_avgs(int cluster_index, int hist_size)
     //creat global variable holding histograms (image features) of each image
     
     //get pixels associated with the cluster index
-    //int new_bin_avgs[hist_size];
+    has_converged = true;
     int * new_bin_avgs = new int[hist_size];
     if (!(cluster_map.find(cluster_index) == cluster_map.end())) //check if has any values
     {
     std::vector<int> image_indexes = cluster_map.at(cluster_index);
+    int * old_bin_avgs = cluster_means[cluster_index];
     for(int i = 0; i < hist_size; i++) //for a certain bin
     {   
         float sum = 0;
         for(int j = 0; j < image_indexes.size(); j++) //average all values of that bin over all images in the cluster
         {
-            sum += image_features[j][i]; //get ith bin of jth image feature
+             sum += image_features[image_indexes[j]][i]; //get ith bin of jth image feature
         }
-        float bin_avg = sum/image_indexes.size();
+        int bin_avg = std::round(sum/image_indexes.size());
         new_bin_avgs[i] = bin_avg;
+        if(old_bin_avgs[i] != bin_avg) //if average has changed, the algorithm has not converged
+        {
+            has_converged = false;
+        }
         
     }
     cluster_means[cluster_index] = new_bin_avgs;
@@ -544,26 +532,58 @@ void Clusterer::update_bin_avgs(int cluster_index, int hist_size)
 }
 
 
+
+//the centroid is the point that minimizes the average squared Euclidean distance to the points in its cell?? - does this change things??
+//computes new bin averages for a single cluster mean
+void Clusterer::test_bin_avgs(int cluster_index, int hist_size)
+{
+    std::cout << "FINDING TEST BIN AVS FOR CLUSTER " << cluster_index << std::endl;
+    int * new_bin_avgs = new int[hist_size];
+    std::vector<int> image_indexes = {91, 96};
+    for(int i = 0; i < hist_size; i++) //for a certain bin
+    {   
+        float sum = 0;
+        for(int j = 0; j < image_indexes.size(); j++) //average all values of that bin over all images in the cluster
+        {
+            sum += image_features[image_indexes[j]][i]; //get ith bin of jth image feature
+
+        }
+        int bin_avg = std::round(sum/image_indexes.size());
+        std::cout << "SUM" << sum << std::endl;
+        std::cout << "N" << image_indexes.size() << std::endl;
+        std::cout << "NEW BIN AVG" << bin_avg << std::endl;
+        new_bin_avgs[i] = bin_avg;
+        
+    }
+    //cluster_means[cluster_index] = new_bin_avgs;
+   // }
+    
+}
+
+
  //The algorithm has converged when the assignments no longer change.
  //or check when averages are no longer updated - may be easier
  //or make this into a boolean flag that is set during update_means()
-bool has_converged()
+/*bool has_converged()
 {
 
-}
+}*/
 
 
 //Call assign to cluster and update means iteratively until no further changes observed
 //The algorithm has converged when the assignments no longer change.
-void Clusterer::k_means()
+void Clusterer::k_means(int no_clusters, int hist_size)
 {
-    /*while(!(has_converged))
+    //initialise cluster means
+    get_random_means(no_clusters);
+    has_converged = false;
+    //while averages are still changing
+    while(!(has_converged))
     {
-        int hist_size = 255/bin_size);
-        assign_to_cluster(hist_size);
-        update_means(hist_size);
+        assign_to_cluster(hist_size); //assign each image to a cluster
+        update_means(hist_size); //update cluster means based on new assignment
 
-    }*/
+    }
     
 }
 
@@ -587,17 +607,6 @@ std::ostream & BLLSAM009::operator<<(std::ostream & os, const Clusterer & kt)
     return os;
 
 }
-
- /*ostream & operator<<(ostream & stream, const nd_vector_t & rhs)
-{ 
-	stream << rhs.data[0];
-	for(int i = 1; i< rhs.data.size(); i++)
-		{
-				stream << " " << rhs.data[i]; 
-				//std::cout << data[i] << std::endl;
-		}
-	return stream; 
-}*/
 
 
 

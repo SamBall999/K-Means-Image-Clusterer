@@ -74,24 +74,11 @@ int main(int argc, char* argv[])
     //BLLSAM009::Clusterer * c = new BLLSAM009::Clusterer();
     BLLSAM009::Clusterer c;
     int size = c.read_images(data_folder);
-    //c->to_greyscale(0, size);
     c.convert_to_grey(size);
-    //c->create_histogram(255, bin_width, size); //how to get max val ??
-    //c->create_histogram(0, 255, bin_width, size); 
+     int hist_size = 255/bin_width;  //how to get max val ??
     c.get_image_features(bin_width, size);
-    c.get_random_means(no_clusters);
-    c.assign_to_cluster(size, bin_width);
+    c.k_means(no_clusters, hist_size);
      std::cout << c << std::endl;
-    c.update_means(size, bin_width);
-    //std::cout << "updated means" << std::endl;
-    c.assign_to_cluster(size, bin_width);
-    //c.update_means(size, bin_width);
-    //std::cout << "updated means" << std::endl;
-    //c.assign_to_cluster(size, bin_width);
-    //c.update_means(size, bin_width);
-    //std::cout << "updated means" << std::endl;
-    //c.assign_to_cluster(size, bin_width);
-    std::cout << c << std::endl; //test overloaded operator
 
 
     //clean up memory in the destructor??
