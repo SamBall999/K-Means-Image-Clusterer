@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream> 
 #include <vector>
+#include <cmath>
 #include <string>
 #include "clusterer.h"
 
@@ -102,13 +103,16 @@ int main(int argc, char* argv[])
          //read in images and get image features
         BLLSAM009::Colour_Feature col;
         int size = col.read_images(data_folder);
-        int hist_size = 255/bin_width;  //how to get max val - keep as instance variable??
-        col.split_into_RGB(size);
+        //int hist_size = std::ceil(255/bin_width);  //how to get max val - keep as instance variable?? - 255 or 256?
+        int hist_size = 255/bin_width; 
+        std::cout << "Hist Size" << hist_size << std::endl;
+        //col.split_into_RGB(size);
+        col.get_colour_images(size);
         col.get_image_features(bin_width, size);
 
         //k means
         BLLSAM009::Clusterer c(col); //pass in greyscale feature
-        c.k_means(no_clusters, hist_size);
+        c.k_means(no_clusters, hist_size*3); //hist_size??
 
          //write to output file
         std::ofstream out_file(output_file_name);
@@ -120,13 +124,14 @@ int main(int argc, char* argv[])
         //read in images and get image features
         BLLSAM009::Grey_Feature g;
         int size = g.read_images(data_folder);
-        int hist_size = 255/bin_width;  //how to get max val - keep as instance variable??
+        //int hist_size = 255/bin_width;  //need to use ceil?? how to get max val - keep as instance variable??
+        int hist_size = 255/bin_width; 
         g.convert_to_grey(size);
         g.get_image_features(bin_width, size);
 
         //k means
         BLLSAM009::Clusterer c(g); //pass in greyscale feature
-        c.k_means(no_clusters, hist_size*3);
+        c.k_means(no_clusters, hist_size);
 
          //write to output file
         std::ofstream out_file(output_file_name);

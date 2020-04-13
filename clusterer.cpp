@@ -47,7 +47,15 @@ Clusterer::Clusterer(Colour_Feature colour) // colour constructor
      image_features = colour.get_image_features();
      image_names = colour.get_image_names();  
      int no_features = image_features.size();
-     std::cout << no_features << std::endl;  
+     std::cout << "No. of features" << no_features << std::endl; 
+      for (int i  = 0 ; i < image_features.size(); i++)
+    {
+        for(int j =0; j < (25*3); j++)
+        {
+            std::cout << image_features[i][j] << ", ";
+        }
+        std::cout << "\n";
+    }
 }
 
 
@@ -70,7 +78,7 @@ void Clusterer::get_random_means(int no_clusters)
     srand(time(NULL));
     //std::vector<int> indices;
     int no_features = image_features.size();
-     std::cout << no_features << std::endl;
+     std::cout << "No.features" << no_features << std::endl;
     int indices[no_features];
     for (int i = 0; i < no_features; i++)
     {
@@ -90,15 +98,15 @@ void Clusterer::get_random_means(int no_clusters)
     }
     std::cout << "cluster size " <<  cluster_means.size() << std::endl;
     //check resulting cluster means
-    /*std::cout << "INITIAL CLUSTER MEANS" << std::endl;
+    std::cout << "INITIAL CLUSTER MEANS" << std::endl;
     for (int i  = 0 ; i < cluster_means.size(); i++)
     {
-        for(int j =0; j < 85; j++)
+        for(int j =0; j < (25*3); j++)
         {
             std::cout << cluster_means[i][j] << ", ";
         }
         std::cout << "\n";
-    }*/
+    }
 
 
 }
@@ -112,9 +120,10 @@ float Clusterer::get_euclid_distance(int image_index, int cluster_index, int his
 {
     
     float sum = 0;
+    //std::cout << "Hist_size" << hist_size << std::endl;
     for (int i = 0; i < hist_size; i++)
     {
-         //std::cout << "hist1 " << image_features[image_index][i] << " hist2 " << cluster_means[cluster_index][i] << std::endl;
+        //std::cout << "hist1 " << image_features[image_index][i] << " hist2 " << cluster_means[cluster_index][i] << std::endl;
         sum += std::pow((image_features[image_index][i] - cluster_means[cluster_index][i]), 2);
         //std::cout << i << std::endl;
     }
@@ -148,7 +157,7 @@ void Clusterer::assign_to_cluster(int hist_size)
         {
             //std::cout << "Getting distance for image " << i << "cluster mean " << j << std::endl;
             float distance = get_euclid_distance(i, j, hist_size);
-             //std::cout << "Distance: " << distance << std::endl;
+            //std::cout << "Distance: " << distance << std::endl;
 
             if(distance < min)
             {

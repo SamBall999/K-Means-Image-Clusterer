@@ -34,11 +34,13 @@ namespace BLLSAM009 {
         
 
         //Generate histogram features
-        void split_into_RGB(int size);
+        void get_colour_images(int size);
+        void split_into_RGB(int index, int size);
         void get_image_features(int bin_size, int size);
         void create_histogram(int index, int maxVal, int bin, int size);
         void group_in_bins(const int frequencies[], int hist_size, int bin_size, int size);
         void combine_histograms(int hist_size);
+        void concat_arrays(int index, int hist_size);
         std::vector<int *>  get_image_features();
         std::vector<std::string>  get_image_names();
 

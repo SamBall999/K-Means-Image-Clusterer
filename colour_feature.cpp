@@ -159,29 +159,41 @@ void Colour_Feature::write_to_output()
 }
 
 
-
-
-void Colour_Feature::split_into_RGB(int size)
+void Colour_Feature::get_colour_images(int size)
 {
-     colour_images.clear();
+    colour_images.clear();
+    int count = 0;
+    std::cout << images.size() << std::endl;
+    for(int i = 0; i < images.size(); i++)
+    {
+        split_into_RGB(i, size);
+    }
+     std::cout << "No. of colour images " << (colour_images.size())  << std::endl;
+}
+
+
+
+
+void Colour_Feature::split_into_RGB(int index, int size)
+{
      unsigned char * R_values = new unsigned char[size];
      unsigned char * G_values = new unsigned char[size];
     unsigned char * B_values = new unsigned char[size];
     int count = 0;
-    for(int i = 0; i < images.size(); i++)
+    for (int j = 0; j < size*3; j+=3)
     {
-        for (int j = 0; j < size*3; j+=3)
-        {
-            R_values[count] = images[i][j];
-            G_values[count] = images[i][j+1];
-            B_values[count] = images[i][j+2];
-            count++;
-        }
-        colour_images.push_back(R_values);
-        colour_images.push_back(G_values);
-        colour_images.push_back(B_values);
-        count = 0; //reset array index
+        R_values[count] = images[index][j];
+        G_values[count] = images[index][j+1];
+        B_values[count] = images[index][j+2];
+        count++;
     }
+    colour_images.push_back(R_values);
+    colour_images.push_back(G_values);
+    colour_images.push_back(B_values);
+    /*for (int j = 0; j < size; j++)
+    {
+        std::cout << int(R_values[j]) << " ";
+    }*/
 }
 
 
@@ -206,13 +218,29 @@ void Colour_Feature::combine_histograms(int hist_size)
 {
     for(int i = 0; i < image_features.size(); i+=3)
     {   
-        //need a way to concatenate these?
-        int * result = new int[hist_size*3];
-        std::copy(image_features[i], image_features[i] + hist_size, result);
-        std::copy(image_features[i+1], image_features[i+1] + hist_size, result + hist_size);  
-        std::copy(image_features[i+2], image_features[i+2] + hist_size, result + hist_size);  
-        combined_features.push_back(result);
+       concat_arrays(i, hist_size);
     }
+    std::cout << combined_features.size() << std::endl;
+     /*for(int i = 0; i < combined_features.size(); i+=3)
+    {   
+        //need a way to concatenate these?
+        std::cout << "NEW IMAGE" << i <<  std::endl;
+        for (int j = 0; j < hist_size*3; j++)
+        {
+            std::cout << combined_features[i][j] << " ";
+        }
+    }*/
+}
+
+
+void Colour_Feature::concat_arrays(int index, int hist_size)
+{
+    int * result = new int[hist_size*3];
+    std::copy(image_features[index], image_features[index] + hist_size, result);
+    std::copy(image_features[index+1], image_features[index+1] + hist_size, result + hist_size);  
+    std::copy(image_features[index+2], image_features[index+2] + hist_size, result + (hist_size*2));  
+    combined_features.push_back(result);
+
 }
 
 
@@ -222,7 +250,7 @@ void Colour_Feature::create_histogram(int base_index, int maxVal, int bin, int s
 {
     
     //use grey_images 
-    int hist_size = maxVal/bin;
+    int hist_size = std::ceil((maxVal+1)/bin);
     int frequencies[maxVal+1]; //initialise a zero array with positions 0-255
     for (int a = 0; a < (maxVal+1); a++) 
     {
@@ -235,6 +263,10 @@ void Colour_Feature::create_histogram(int base_index, int maxVal, int bin, int s
         frequencies[colour_images[base_index][i]]++;
        
     }
+     /*for (int j = 0; j < (maxVal+1); j++)
+    {
+            std::cout << frequencies[j] << " ";
+    }*/
      group_in_bins(frequencies, hist_size, bin, (maxVal+1));
 
 }
@@ -267,6 +299,11 @@ void Colour_Feature::group_in_bins(const int frequencies[], int hist_size, int b
 
     }
     image_features.push_back(hist);
+    /*std::cout << "NEW IMAGE" << std::endl;
+    for (int j = 0; j < hist_size; j++)
+    {
+            std::cout << hist[j] << " ";
+    }*/
 
 }
 
