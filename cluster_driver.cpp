@@ -41,8 +41,8 @@ int main(int argc, char* argv[])
             {
                 case 'o': 
                 {
-                     //output_name = std::string(argv[i+1]);
-                      std::cout << output_name << std::endl;
+                      output_name = std::string(argv[i+1]);
+                      //std::cout << output_name << std::endl;
                       break;
                 }
 
@@ -110,7 +110,6 @@ int main(int argc, char* argv[])
       std::ofstream out_file(output_file_name);
      //out_file.open(output_file_name);
      //not printing to file??
-     out_file << "Testing" << std::endl;
      out_file << c << std::endl;
       //std::cout << c << std::endl;
 

@@ -576,16 +576,16 @@ std::ostream & BLLSAM009::operator<<(std::ostream & os, const Clusterer & kt)
 {
     for (auto const& x : kt.cluster_map)
     {
-        std::cout << "Cluster " << x.first << ": ";
+        os << "Cluster " << x.first << ": " << std::endl;
         //std::cout << "Images " << std::endl;
         //std::cout << "image" << x.second[0]; //as specified in doc
-         std::cout << "image" << x.second[0] << " " << kt.image_names[x.second[0]] << std::endl; 
+         os << "image" << x.second[0] << " " << kt.image_names[x.second[0]]; 
         for(int i = 1; i < x.second.size(); i++)
         {
             //std::cout << ", image" << x.second[i]; //as specified in doc
-            std::cout << ", image" << x.second[i] << " " << kt.image_names[x.second[i]] << std::endl; //for testing
+            os << ", \nimage" << x.second[i] << " " << kt.image_names[x.second[i]]; //for testing
         }
-        std::cout << "\n" << std::endl;
+        os << "\n" << std::endl;
     }
     return os;
 
