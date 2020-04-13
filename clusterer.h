@@ -6,6 +6,8 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include "grey_feature.h"
+#include "colour_feature.h"
 
 
 //break into several classes?
@@ -17,9 +19,9 @@ namespace BLLSAM009 {
         private:
         //try to decrease these?
         //std::vector<std::unique_ptr<unsigned char *>> images;
-        std::vector<unsigned char *> images;
-        std::vector<unsigned char *>  greyscale_images;
-        std::vector<unsigned char *>  colour_images;
+        //std::vector<unsigned char *> images;
+        //std::vector<unsigned char *>  greyscale_images;
+        //std::vector<unsigned char *>  colour_images;
         std::vector<std::string>  image_names;
         std::vector<int *>  image_features;
         std::vector<int *>  cluster_means;
@@ -29,10 +31,12 @@ namespace BLLSAM009 {
 
         public:
         Clusterer(void); // default constructor 
+        Clusterer(Grey_Feature grey);
+        Clusterer(Colour_Feature grey);
         ~Clusterer(void); //destructor
 
         //File I/O
-        int read_images(const std::string & folder_name);
+        /*int read_images(const std::string & folder_name);
         int read_image(const std::string & image_name);
         void write_to_output();
         void write_grey_to_output();
@@ -44,11 +48,12 @@ namespace BLLSAM009 {
 
         //Process colour images
         void split_into_RGB(int size);
+        void get_colour_image_features(int bin_size, int size);
 
         //Get image features
-        void create_histogram(int index, int maxVal, int bin, int size);
+        void create_histogram(int index, int maxVal, int bin, int size, bool colour);
         void get_image_features(int bin_size, int size);
-        void group_in_bins(const int frequencies[], int hist_size, int bin_size, int size);
+        void group_in_bins(const int frequencies[], int hist_size, int bin_size, int size);*/
 
         //K means algorithm 
         float get_euclid_distance(int image_index, int cluster_index, int hist_size);

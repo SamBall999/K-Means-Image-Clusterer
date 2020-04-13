@@ -2,8 +2,8 @@ CC=g++ #the compiler
 LIBS=  #the libraries 
 
 #Link into executable
-clusterer: cluster_driver.o clusterer.o 
-	$(CC) -o clusterer cluster_driver.o clusterer.o $(LIBS)
+clusterer: cluster_driver.o clusterer.o grey_feature.o colour_feature.o
+	$(CC) -o clusterer cluster_driver.o clusterer.o grey_feature.o colour_feature.o $(LIBS)
 
 #Compile
 cluster_driver.o: cluster_driver.cpp 
@@ -12,6 +12,14 @@ cluster_driver.o: cluster_driver.cpp
 #Compile
 clusterer.o: clusterer.cpp clusterer.h
 	$(CC) -c clusterer.cpp  --std=c++11
+
+#Compile
+grey_feature.o: grey_feature.cpp grey_feature.h
+	$(CC) -c grey_feature.cpp  --std=c++11
+
+#Compile
+colour_feature.o: colour_feature.cpp colour_feature.h
+	$(CC) -c colour_feature.cpp  --std=c++11
 
 #Other rules including clean and run 
 clean:

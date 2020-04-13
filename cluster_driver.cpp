@@ -85,20 +85,73 @@ int main(int argc, char* argv[])
     std::cout << "No. of Clusters: " << no_clusters << std::endl;
     std::cout << "Bin Width: " << bin_width << std::endl;
     std::cout << "Colour Histograms: " << colour_flag << std::endl;
+    std::cout << "\n" << std::endl;
 
+
+
+    std::string output_file_name = output_name + ".txt";
+    //delete output file if it exists
+      if (std::remove(output_file_name.c_str()) != 0)
+     {
+		//std::cout << "File does not exist" << std::endl;
+     }
+
+
+    if(colour_flag==true)
+    {
+         //read in images and get image features
+        BLLSAM009::Colour_Feature col;
+        int size = col.read_images(data_folder);
+        int hist_size = 255/bin_width;  //how to get max val - keep as instance variable??
+        col.split_into_RGB(size);
+        col.get_image_features(bin_width, size);
+
+        //k means
+        BLLSAM009::Clusterer c(col); //pass in greyscale feature
+        c.k_means(no_clusters, hist_size);
+
+         //write to output file
+        std::ofstream out_file(output_file_name);
+        out_file << c << std::endl;
+
+    }
+    else 
+    {
+        //read in images and get image features
+        BLLSAM009::Grey_Feature g;
+        int size = g.read_images(data_folder);
+        int hist_size = 255/bin_width;  //how to get max val - keep as instance variable??
+        g.convert_to_grey(size);
+        g.get_image_features(bin_width, size);
+
+        //k means
+        BLLSAM009::Clusterer c(g); //pass in greyscale feature
+        c.k_means(no_clusters, hist_size*3);
+
+         //write to output file
+        std::ofstream out_file(output_file_name);
+        out_file << c << std::endl;
+    }
 
 
     //BLLSAM009::Clusterer * c = new BLLSAM009::Clusterer();
-    BLLSAM009::Clusterer c;
+    /*BLLSAM009::Clusterer c;
+
     int size = c.read_images(data_folder);
+    int hist_size = 255/bin_width;  //how to get max val ??
+    //c.split_into_RGB(size);
+    //c.get_colour_image_features(bin_width, size);
+
+
     c.convert_to_grey(size);
-     int hist_size = 255/bin_width;  //how to get max val ??
     c.get_image_features(bin_width, size);
     c.k_means(no_clusters, hist_size);
-    // std::cout << c << std::endl;
+    // std::cout << c << std::endl;*/
+
+
 
     
-    std::string output_file_name = output_name + ".txt";
+    /*std::string output_file_name = output_name + ".txt";
     
     //delete output file if it exists
       if (std::remove(output_file_name.c_str()) != 0)
@@ -115,7 +168,7 @@ int main(int argc, char* argv[])
 
 
     //clean up memory in the destructor??
-    //delete c; //clean up
+    //delete c; //clean up*/
     
     
     return 0;
