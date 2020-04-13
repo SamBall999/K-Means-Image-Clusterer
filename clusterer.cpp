@@ -234,6 +234,10 @@ int Clusterer::read_image(const std::string & image_name)
 
 
 
+
+
+
+
 void Clusterer::convert_to_grey(int size)
 {
      greyscale_images.clear();
@@ -243,6 +247,31 @@ void Clusterer::convert_to_grey(int size)
     }
      write_grey_to_output();
 }
+
+
+
+void Clusterer::split_into_RGB(int size)
+{
+     colour_images.clear();
+     unsigned char * R_values = new unsigned char[size];
+     unsigned char * G_values = new unsigned char[size];
+    unsigned char * B_values = new unsigned char[size];
+    int count = 0;
+    for(int i = 0; i < images.size(); i++)
+    {
+        for (int j = 0; j < size*3; j+=3)
+        {
+            R_values[count] = images[i][j];
+            G_values[count] = images[i][j+1];
+            B_values[count] = images[i][j+2];
+            count++;
+        }
+        colour_images.push_back(R_values);
+        colour_images.push_back(G_values);
+        colour_images.push_back(B_values);
+    }
+}
+
 
 
 
@@ -291,7 +320,6 @@ void Clusterer::get_image_features(int bin_size, int size)
     //image_features (greyscale_images);
     for(int i = 0; i < greyscale_images.size(); i++)
     {
-        //image_features[i]=create_histogram(i, 255, bin_size, size); //indexing is v NB
         create_histogram(i, 255, bin_size, size); 
     }
 }
@@ -299,7 +327,6 @@ void Clusterer::get_image_features(int bin_size, int size)
 
 
 //as an extra - draw a pop up histogram??
-//**WARNING PIXEL VALUES AREN'T ALWAYS THE SAME?? - may have fixed this
 void Clusterer::create_histogram(int index, int maxVal, int bin, int size)
 {
     //use grey_images 
@@ -315,10 +342,6 @@ void Clusterer::create_histogram(int index, int maxVal, int bin, int size)
         frequencies[greyscale_images[index][i]]++;
        
     }
-    /*for (int k  = 0; k < (maxVal+1); k++)
-    {
-        std::cout << "Pixel value " << k << " Count  " << frequencies[k] << std::endl;
-    }*/
      group_in_bins(frequencies, hist_size, bin, (maxVal+1));
     //group_in_bins(frequencies, hist_size, 3, (maxVal+1));
      /*for(int j = 0; j < 85; j++)
@@ -476,23 +499,16 @@ void Clusterer::assign_to_cluster(int hist_size)
 void Clusterer::update_means(int hist_size)
 {
     std::cout << "Updating means..." << std::endl;
-    //int hist_size = 255/bin_size;
+    has_converged = true; //must check for every cluster 
+    //iterate through clusters
     for (int i = 0; i < cluster_means.size(); i++)
     {
-        //cluster_means[i] = get_bin_avgs(i, hist_size);
-        update_bin_avgs(i, hist_size);
-    }
-
-
-    //std::cout << "NEW MEANS" << std::endl;
-    /*for (int i  = 0 ; i < cluster_means.size(); i++)
-    {
-        for(int j =0; j < 85; j++)
+        bool has_changed = update_bin_avgs(i, hist_size);
+        if(has_changed == true)
         {
-            std::cout << cluster_means[i][j] << ", ";
+            has_converged = false;
         }
-        std::cout << "\n";
-    }*/
+    }
 
 }
 
@@ -500,12 +516,10 @@ void Clusterer::update_means(int hist_size)
 
  //the centroid is the point that minimizes the average squared Euclidean distance to the points in its cell?? - does this change things??
 //computes new bin averages for a single cluster mean
-void Clusterer::update_bin_avgs(int cluster_index, int hist_size)
+bool Clusterer::update_bin_avgs(int cluster_index, int hist_size)
 {
-    //creat global variable holding histograms (image features) of each image
-    
+    bool has_changed = false;
     //get pixels associated with the cluster index
-    has_converged = true;
     int * new_bin_avgs = new int[hist_size];
     if (!(cluster_map.find(cluster_index) == cluster_map.end())) //check if has any values
     {
@@ -520,43 +534,16 @@ void Clusterer::update_bin_avgs(int cluster_index, int hist_size)
         }
         int bin_avg = std::round(sum/image_indexes.size());
         new_bin_avgs[i] = bin_avg;
+         ///* std::cout << "new: " << bin_avg << " old: " << old_bin_avgs[i];
         if(old_bin_avgs[i] != bin_avg) //if average has changed, the algorithm has not converged
         {
-            has_converged = false;
+            has_changed = true;
         }
         
     }
     cluster_means[cluster_index] = new_bin_avgs;
     }
-    
-}
-
-
-
-//the centroid is the point that minimizes the average squared Euclidean distance to the points in its cell?? - does this change things??
-//computes new bin averages for a single cluster mean
-void Clusterer::test_bin_avgs(int cluster_index, int hist_size)
-{
-    std::cout << "FINDING TEST BIN AVS FOR CLUSTER " << cluster_index << std::endl;
-    int * new_bin_avgs = new int[hist_size];
-    std::vector<int> image_indexes = {91, 96};
-    for(int i = 0; i < hist_size; i++) //for a certain bin
-    {   
-        float sum = 0;
-        for(int j = 0; j < image_indexes.size(); j++) //average all values of that bin over all images in the cluster
-        {
-            sum += image_features[image_indexes[j]][i]; //get ith bin of jth image feature
-
-        }
-        int bin_avg = std::round(sum/image_indexes.size());
-        std::cout << "SUM" << sum << std::endl;
-        std::cout << "N" << image_indexes.size() << std::endl;
-        std::cout << "NEW BIN AVG" << bin_avg << std::endl;
-        new_bin_avgs[i] = bin_avg;
-        
-    }
-    //cluster_means[cluster_index] = new_bin_avgs;
-   // }
+    return has_changed;
     
 }
 
@@ -564,10 +551,6 @@ void Clusterer::test_bin_avgs(int cluster_index, int hist_size)
  //The algorithm has converged when the assignments no longer change.
  //or check when averages are no longer updated - may be easier
  //or make this into a boolean flag that is set during update_means()
-/*bool has_converged()
-{
-
-}*/
 
 
 //Call assign to cluster and update means iteratively until no further changes observed
@@ -612,7 +595,7 @@ std::ostream & BLLSAM009::operator<<(std::ostream & os, const Clusterer & kt)
 
 
 //get values in map
-std::vector<int> Clusterer::extract_values(std::map<unsigned int, int> const& map) 
+/*std::vector<int> Clusterer::extract_values(std::map<unsigned int, int> const& map) 
 {
   std::vector<int> values;
   for (auto const& element : map)
@@ -637,6 +620,6 @@ std::vector<unsigned int> Clusterer::extract_keys(std::map<unsigned int, int> co
     keys.push_back(element.first);
   }
   return keys;
-}
+}*/
 
 

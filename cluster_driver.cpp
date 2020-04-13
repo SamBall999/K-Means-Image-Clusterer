@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
     std::string output_name = "";
     int no_clusters = 10; //set default 
     float bin_width = 1; //set default
+    bool colour_flag = false;
 
     //check for additional arguments
     if(argc > 1)
@@ -40,34 +41,50 @@ int main(int argc, char* argv[])
             {
                 case 'o': 
                 {
-                     output_name = std::string(argv[i+1]);
+                     //output_name = std::string(argv[i+1]);
                       std::cout << output_name << std::endl;
                       break;
                 }
 
                 case 'k':  
                 {
-                     std::cout << argv[i+1] << std::endl;
+                     //std::cout << argv[i+1] << std::endl;
                     no_clusters = stoi(std::string(argv[i+1]));
                     break;
                 }
 
                 case 'b': 
                 {
-                     std::cout << argv[i+1] << std::endl;
-                    bin_width = stof(std::string(argv[i+1])); //must this be bin not b??
+                    //std::cout << argv[i+1] << std::endl;
+                    if(std::string(argv[i]) == "-bin") //check that valid option entered
+                    {
+                        bin_width = stof(std::string(argv[i+1])); //must this be bin not b??
+                    }
                     break;
                 }
+                 case 'c': 
+                {
+                    //std::cout << argv[i] << std::endl;
+                    if(std::string(argv[i]) == "-color") //check that valid option entered
+                    {
+                        colour_flag = true; //must this be colour not c?
+                        //std::cout << "Use colour histograms" << std::endl;
+                    }
+                    break;
+                }
+                
             }
         }
        
 
     }
 
-    std::cout << data_folder << std::endl;
-    std::cout << output_name << std::endl;
-    std::cout << no_clusters << std::endl;
-    std::cout << bin_width << std::endl;
+    std::cout << "\nCHOSEN PARAMETERS" << std::endl;
+    std::cout << "Data Folder: " << data_folder << std::endl;
+    std::cout << "Output File: " << output_name << std::endl;
+    std::cout << "No. of Clusters: " << no_clusters << std::endl;
+    std::cout << "Bin Width: " << bin_width << std::endl;
+    std::cout << "Colour Histograms: " << colour_flag << std::endl;
 
 
 
@@ -78,7 +95,24 @@ int main(int argc, char* argv[])
      int hist_size = 255/bin_width;  //how to get max val ??
     c.get_image_features(bin_width, size);
     c.k_means(no_clusters, hist_size);
-     std::cout << c << std::endl;
+    // std::cout << c << std::endl;
+
+    
+    std::string output_file_name = output_name + ".txt";
+    
+    //delete output file if it exists
+      if (std::remove(output_file_name.c_str()) != 0)
+     {
+		std::cout << "File does not exist" << std::endl;
+     }
+
+     //write to output file
+      std::ofstream out_file(output_file_name);
+     //out_file.open(output_file_name);
+     //not printing to file??
+     out_file << "Testing" << std::endl;
+     out_file << c << std::endl;
+      //std::cout << c << std::endl;
 
 
     //clean up memory in the destructor??
