@@ -65,6 +65,100 @@ Clusterer::~Clusterer()
 }
 
 
+void Clusterer::k_meansplusplus_init(int no_clusters, int hist_size)
+{
+    std::cout << "Get initial cluster means for " << no_clusters << " clusters" << std::endl;
+    //int seed = 0; //or use clock to set this
+    //use a seed that gives you good results
+    //somehow make sure the random means are distributed !!
+    srand(time(NULL));
+    //std::vector<int> indices;
+    int no_features = image_features.size();
+     std::cout << "No.features" << no_features << std::endl;
+    int indices[no_features];
+    for (int i = 0; i < no_features; i++)
+    {
+        indices[i] = 0;
+    }
+    //choose first random initial mean
+    int random = (rand() % image_features.size());
+    if(indices[random]==0)
+    {
+        indices[random] = 1;
+        cluster_means.push_back(image_features[random]); 
+        std::cout << random << " " << std::endl;
+        std::cout << "initial cluser mean " << ": " << image_names[random] << std::endl; 
+    }
+    //std::vector<float> distances;
+    int max = 0;
+    int new_centroid = -1;
+    /*for (int i = 0; i < image_features.size(); i++)
+    {
+         float distance = get_euclid_distance(i, 0, hist_size); //let cluster index be only the first element 0 for now
+         distances.push_back(distance);
+         std::cout << distance << std::endl;
+         if(distance > max)
+         {
+             max = distance;
+             new_centroid = i; //furthest distance
+         }
+    }
+    indices[new_centroid] = 1; //mark that this has been used
+    cluster_means.push_back(image_features[new_centroid]); 
+    std::cout << new_centroid << "with max distance: " << distances[new_centroid]<< std::endl;
+
+    new_centroid = -1;*/
+     std::vector<float> distances;
+    for(int k = 0; k < (no_clusters-1); k++)
+    {
+        int max = 0;
+        for (int i = 0; i < image_features.size(); i++)
+        {
+            if(indices[i]==0) //hasn't been chosen as centroid yet
+            {
+                int min_distance = 10000000;
+                for (int j = 0; j < cluster_means.size(); j++)
+                {
+                    std::cout << "CHECKING CLUSTER MEAN " << j << std::endl;
+                    //std::cout << "Getting distance for image " << i << "cluster mean " << j << std::endl;
+                    float distance = get_euclid_distance(i, j, hist_size); //let cluster index be only the first element 0 for now
+                    distances.push_back(distance);
+                    std::cout << distance << std::endl;
+                    if(distance < min_distance)
+                    {
+                        min_distance = distance;
+                        std::cout << "new min" << min_distance << std::endl;
+                    }
+                    //std::cout << distance << std::endl;
+                 
+                }
+                //std::cout << min_distance << " " << image_names[i] << std::endl;
+                if(min_distance > max)
+                {
+                    max = min_distance;
+                    new_centroid = i; //furthest distance
+                }
+            }
+        }
+        indices[new_centroid] = 1; //mark that this has been used
+        cluster_means.push_back(image_features[new_centroid]); 
+        //std::cout << new_centroid << "with max distance: " << distances[new_centroid]<< std::endl;
+         std::cout << image_names[new_centroid] << std::endl;
+    }
+    /*std::cout << "INITIAL CLUSTER MEANS" << std::endl;
+    for (int i  = 0 ; i < cluster_means.size(); i++)
+    {
+        for(int j =0; j < (26); j++)
+        {
+            std::cout << cluster_means[i][j] << ", ";
+        }
+        std::cout << "\n";
+    }*/
+    std::cout << cluster_means.size() << std::endl;
+
+}
+
+
 
 //Commonly used initialization methods are Forgy and Random Partition
 // The Forgy method randomly chooses k observations from the dataset and uses these as the initial means. 
@@ -238,7 +332,8 @@ bool Clusterer::update_bin_avgs(int cluster_index, int hist_size)
 void Clusterer::k_means(int no_clusters, int hist_size)
 {
     //initialise cluster means
-    get_random_means(no_clusters);
+    //get_random_means(no_clusters);
+    k_meansplusplus_init(no_clusters, hist_size);
     has_converged = false;
     //while averages are still changing
     std::cout << has_converged << std::endl;

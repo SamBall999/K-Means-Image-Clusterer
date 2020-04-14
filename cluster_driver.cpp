@@ -126,6 +126,9 @@ int main(int argc, char* argv[])
 
         //k means
         BLLSAM009::Clusterer c(g); //pass in greyscale feature
+
+        //to test only
+        //c.k_meansplusplus_init(no_clusters, hist_size);
         c.k_means(no_clusters, hist_size);
 
          //write to output file

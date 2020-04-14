@@ -274,14 +274,14 @@ int Grey_Feature::get_image_features(int bin_size, int size)
     }
 
     //int hist_size = 255/bin_size;
-    for(int i = 0; i < image_features.size(); i+=1)
+    /*for(int i = 0; i < image_features.size(); i+=1)
     {   
         std::cout << "NEW IMAGE" << i <<  std::endl;
         for (int j = 0; j < hist_size; j++)
         {
             std::cout << image_features[i][j] << " ";
         }
-    }
+    }*/
     return hist_size;
 }
 

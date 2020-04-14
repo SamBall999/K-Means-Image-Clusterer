@@ -58,6 +58,7 @@ namespace BLLSAM009 {
         //K means algorithm 
         float get_euclid_distance(int image_index, int cluster_index, int hist_size);
         void get_random_means(int no_clusters);
+        void k_meansplusplus_init(int no_clusters, int hist_size);
         void assign_to_cluster(int hist_size);
         bool update_bin_avgs(int cluster_index, int hist_size);
         void update_means(int hist_size);
