@@ -14,6 +14,7 @@ namespace BLLSAM009 {
     class Colour_Feature{
 
         private:
+        int MAX_VAL;
         std::vector<unsigned char *> images;
         std::vector<unsigned char *>  colour_images;
         std::vector<std::string>  image_names;
@@ -36,8 +37,8 @@ namespace BLLSAM009 {
         //Generate histogram features
         void get_colour_images(int size);
         void split_into_RGB(int index, int size);
-        void get_image_features(int bin_size, int size);
-        void create_histogram(int index, int maxVal, int bin, int size);
+        int get_image_features(int bin_size, int size);
+        void create_histogram(int index, int hist_size, int bin, int size);
         void group_in_bins(const int frequencies[], int hist_size, int bin_size, int size);
         void combine_histograms(int hist_size);
         void concat_arrays(int index, int hist_size);

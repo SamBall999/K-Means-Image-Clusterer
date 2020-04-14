@@ -47,7 +47,7 @@ Clusterer::Clusterer(Colour_Feature colour) // colour constructor
      image_features = colour.get_image_features();
      image_names = colour.get_image_names();  
      int no_features = image_features.size();
-     std::cout << "No. of features" << no_features << std::endl; 
+     /*std::cout << "No. of features" << no_features << std::endl; 
       for (int i  = 0 ; i < image_features.size(); i++)
     {
         for(int j =0; j < (25*3); j++)
@@ -55,7 +55,7 @@ Clusterer::Clusterer(Colour_Feature colour) // colour constructor
             std::cout << image_features[i][j] << ", ";
         }
         std::cout << "\n";
-    }
+    }*/
 }
 
 
@@ -101,7 +101,7 @@ void Clusterer::get_random_means(int no_clusters)
     std::cout << "INITIAL CLUSTER MEANS" << std::endl;
     for (int i  = 0 ; i < cluster_means.size(); i++)
     {
-        for(int j =0; j < (25*3); j++)
+        for(int j =0; j < (26); j++)
         {
             std::cout << cluster_means[i][j] << ", ";
         }

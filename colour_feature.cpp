@@ -83,11 +83,11 @@ int Colour_Feature::read_image(const std::string & image_name)
     }
     int width;
     int height;
-    int max_val;
+    //int max_val;
     
     std::istringstream iss(line);
     iss >> width >> std::ws >> height >> std::ws; //check newlines?
-    byte_file >> max_val >> std::ws;
+    byte_file >> MAX_VAL >> std::ws;
 
 
     
@@ -198,19 +198,21 @@ void Colour_Feature::split_into_RGB(int index, int size)
 
 
 //NB this assumes size of image is constant
-void Colour_Feature::get_image_features(int bin_size, int size)
+int Colour_Feature::get_image_features(int bin_size, int size)
 {
-     std::cout << "No. of colour images " << (colour_images.size())/3  << std::endl;
+    std::cout << "No. of colour images " << (colour_images.size())/3  << std::endl;
+    int hist_size = std::ceil((MAX_VAL+1)/(float)bin_size); //change back if necessary
     for(int i = 0; i < colour_images.size(); i+=3)
     {
-        create_histogram(i, 255, bin_size, size); 
-        create_histogram(i+1, 255, bin_size, size); 
-        create_histogram(i+2, 255, bin_size, size); 
+        create_histogram(i, hist_size, bin_size, size); 
+        create_histogram(i+1, hist_size, bin_size, size); 
+        create_histogram(i+2, hist_size, bin_size, size); 
         //need a way to concatenate these?
     }
     //concatenate R, G and B histograms into one feature for each image
-    int hist_size = 255/bin_size;
+    //int hist_size = 255/bin_size;
     combine_histograms(hist_size);
+    return hist_size;
 }
 
 
@@ -246,13 +248,13 @@ void Colour_Feature::concat_arrays(int index, int hist_size)
 
 
 //as an extra - draw a pop up histogram??
-void Colour_Feature::create_histogram(int base_index, int maxVal, int bin, int size)
+void Colour_Feature::create_histogram(int base_index, int hist_size, int bin, int size)
 {
     
     //use grey_images 
-    int hist_size = std::ceil((maxVal+1)/bin);
-    int frequencies[maxVal+1]; //initialise a zero array with positions 0-255
-    for (int a = 0; a < (maxVal+1); a++) 
+    //int hist_size = std::ceil((MAX_VAL+1)/bin);
+    int frequencies[MAX_VAL+1]; //initialise a zero array with positions 0-255
+    for (int a = 0; a < (MAX_VAL+1); a++) 
     {
         frequencies[a] = 0;
     }
@@ -267,7 +269,7 @@ void Colour_Feature::create_histogram(int base_index, int maxVal, int bin, int s
     {
             std::cout << frequencies[j] << " ";
     }*/
-     group_in_bins(frequencies, hist_size, bin, (maxVal+1));
+     group_in_bins(frequencies, hist_size, bin, (MAX_VAL+1));
 
 }
 

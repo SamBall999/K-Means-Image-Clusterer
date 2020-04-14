@@ -83,11 +83,11 @@ int Grey_Feature::read_image(const std::string & image_name)
     }
     int width;
     int height;
-    int max_val;
+    //int max_val;
     
     std::istringstream iss(line);
     iss >> width >> std::ws >> height >> std::ws; //check newlines?
-    byte_file >> max_val >> std::ws;
+    byte_file >> MAX_VAL >> std::ws;
 
 
     
@@ -263,25 +263,38 @@ void Grey_Feature::write_grey_to_output()
 
 
 //NB this assumes size of image is constant
-void Grey_Feature::get_image_features(int bin_size, int size)
+int Grey_Feature::get_image_features(int bin_size, int size)
 {
      std::cout << "No. of greyscale images " << greyscale_images.size()  << std::endl;
     //image_features (greyscale_images);
+    int hist_size = std::ceil((MAX_VAL+1)/(float)bin_size); //change back if necessary
     for(int i = 0; i < greyscale_images.size(); i++)
     {
-        create_histogram(i, 255, bin_size, size); 
+        create_histogram(i, hist_size, bin_size, size); 
     }
+
+    //int hist_size = 255/bin_size;
+    for(int i = 0; i < image_features.size(); i+=1)
+    {   
+        std::cout << "NEW IMAGE" << i <<  std::endl;
+        for (int j = 0; j < hist_size; j++)
+        {
+            std::cout << image_features[i][j] << " ";
+        }
+    }
+    return hist_size;
 }
 
 
 
-void Grey_Feature::create_histogram(int index, int maxVal, int bin, int size)
+void Grey_Feature::create_histogram(int index, int hist_size, int bin, int size)
 {
     
     //use grey_images 
-    int hist_size = maxVal/bin;
-    int frequencies[maxVal+1]; //initialise a zero array with positions 0-255
-    for (int a = 0; a < (maxVal+1); a++) 
+    //int hist_size = maxVal/bin;
+    //int hist_size = (maxVal+1)/bin; //change back if breaks
+    int frequencies[MAX_VAL+1]; //initialise a zero array with positions 0-255
+    for (int a = 0; a < (MAX_VAL+1); a++) 
     {
         frequencies[a] = 0;
     }
@@ -292,7 +305,7 @@ void Grey_Feature::create_histogram(int index, int maxVal, int bin, int size)
         frequencies[greyscale_images[index][i]]++;
        
     }
-     group_in_bins(frequencies, hist_size, bin, (maxVal+1));
+     group_in_bins(frequencies, hist_size, bin, (MAX_VAL+1));
 
 }
 

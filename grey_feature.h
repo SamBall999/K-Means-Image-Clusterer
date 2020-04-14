@@ -14,6 +14,7 @@ namespace BLLSAM009 {
     class Grey_Feature{
 
         private:
+        int MAX_VAL;
         std::vector<unsigned char *> images;
         std::vector<unsigned char *>  greyscale_images;
         std::vector<std::string>  image_names;
@@ -38,8 +39,8 @@ namespace BLLSAM009 {
         void write_grey_to_output();
 
         //Generate histogram features
-        void get_image_features(int bin_size, int size);
-        void create_histogram(int index, int maxVal, int bin, int size);
+        int get_image_features(int bin_size, int size);
+        void create_histogram(int index, int hist_size, int bin, int size);
         void group_in_bins(const int frequencies[], int hist_size, int bin_size, int size);
         std::vector<int *>  get_image_features();
         std::vector<std::string>  get_image_names();

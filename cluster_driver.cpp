@@ -103,12 +103,9 @@ int main(int argc, char* argv[])
          //read in images and get image features
         BLLSAM009::Colour_Feature col;
         int size = col.read_images(data_folder);
-        //int hist_size = std::ceil(255/bin_width);  //how to get max val - keep as instance variable?? - 255 or 256?
-        int hist_size = 255/bin_width; 
-        std::cout << "Hist Size" << hist_size << std::endl;
-        //col.split_into_RGB(size);
         col.get_colour_images(size);
-        col.get_image_features(bin_width, size);
+        int hist_size = col.get_image_features(bin_width, size);
+        std::cout << "Hist Size" << hist_size << std::endl;
 
         //k means
         BLLSAM009::Clusterer c(col); //pass in greyscale feature
@@ -124,10 +121,8 @@ int main(int argc, char* argv[])
         //read in images and get image features
         BLLSAM009::Grey_Feature g;
         int size = g.read_images(data_folder);
-        //int hist_size = 255/bin_width;  //need to use ceil?? how to get max val - keep as instance variable??
-        int hist_size = 255/bin_width; 
         g.convert_to_grey(size);
-        g.get_image_features(bin_width, size);
+        int hist_size = g.get_image_features(bin_width, size);
 
         //k means
         BLLSAM009::Clusterer c(g); //pass in greyscale feature
@@ -139,41 +134,9 @@ int main(int argc, char* argv[])
     }
 
 
-    //BLLSAM009::Clusterer * c = new BLLSAM009::Clusterer();
-    /*BLLSAM009::Clusterer c;
-
-    int size = c.read_images(data_folder);
-    int hist_size = 255/bin_width;  //how to get max val ??
-    //c.split_into_RGB(size);
-    //c.get_colour_image_features(bin_width, size);
-
-
-    c.convert_to_grey(size);
-    c.get_image_features(bin_width, size);
-    c.k_means(no_clusters, hist_size);
-    // std::cout << c << std::endl;*/
-
-
-
-    
-    /*std::string output_file_name = output_name + ".txt";
-    
-    //delete output file if it exists
-      if (std::remove(output_file_name.c_str()) != 0)
-     {
-		std::cout << "File does not exist" << std::endl;
-     }
-
-     //write to output file
-      std::ofstream out_file(output_file_name);
-     //out_file.open(output_file_name);
-     //not printing to file??
-     out_file << c << std::endl;
-      //std::cout << c << std::endl;
-
 
     //clean up memory in the destructor??
-    //delete c; //clean up*/
+    //delete c; //clean up
     
     
     return 0;
