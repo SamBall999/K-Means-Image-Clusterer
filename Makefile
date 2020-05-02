@@ -2,8 +2,8 @@ CC=g++ #the compiler
 LIBS=  #the libraries 
 
 #Link into executable
-clusterer: cluster_driver.o clusterer.o grey_feature.o colour_feature.o
-	$(CC) -o clusterer cluster_driver.o clusterer.o grey_feature.o colour_feature.o $(LIBS)
+clusterer: cluster_driver.o clusterer.o grey_feature.o colour_feature.o two_d_feature.o three_d_feature.o shape_feature.o
+	$(CC) -o clusterer cluster_driver.o clusterer.o grey_feature.o colour_feature.o two_d_feature.o three_d_feature.o shape_feature.o  $(LIBS)
 
 #Compile
 cluster_driver.o: cluster_driver.cpp 
@@ -21,9 +21,21 @@ grey_feature.o: grey_feature.cpp grey_feature.h
 colour_feature.o: colour_feature.cpp colour_feature.h
 	$(CC) -c colour_feature.cpp  --std=c++11
 
+#Compile
+two_d_feature.o: two_d_feature.cpp two_d_feature.h
+	$(CC) -c two_d_feature.cpp  --std=c++11
+
+#Compile
+three_d_feature.o: three_d_feature.cpp three_d_feature.h
+	$(CC) -c three_d_feature.cpp  --std=c++11
+
+#Compile
+shape_feature.o: shape_feature.cpp shape_feature.h
+	$(CC) -c shape_feature.cpp  --std=c++11
+
 #Other rules including clean and run 
 clean:
 	@rm -f *.o clusterer 
 
 run:
-	./clusterer Gradient_Numbers_PPMS -o output -k 10 -bin 10
+	./clusterer Gradient_Numbers_PPMS -o output -k 10 -bin 1

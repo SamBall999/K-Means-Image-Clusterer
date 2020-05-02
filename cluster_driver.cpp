@@ -31,6 +31,9 @@ int main(int argc, char* argv[])
     int no_clusters = 10; //set default 
     float bin_width = 1; //set default
     bool colour_flag = false;
+    bool two_dim_flag = false;
+    bool three_dim_flag = false;
+    bool shape_flag = false;
 
     //check for additional arguments
     if(argc > 1)
@@ -73,6 +76,31 @@ int main(int argc, char* argv[])
                     }
                     break;
                 }
+                 case 't': 
+                {
+                    //std::cout << argv[i] << std::endl;
+                    if(std::string(argv[i]) == "-two_dim") //check that valid option entered
+                    {
+                        two_dim_flag = true; //must this be colour not c?
+                        //std::cout << "Use colour histograms" << std::endl;
+                    }
+                    else if(std::string(argv[i]) == "-three_dim") //check that valid option entered
+                    {
+                        three_dim_flag = true; //must this be colour not c?
+                        //std::cout << "Use colour histograms" << std::endl;
+                    }
+                    break;
+                }
+                  case 's': 
+                {
+                    //std::cout << argv[i] << std::endl;
+                    if(std::string(argv[i]) == "-shape") //check that valid option entered
+                    {
+                        shape_flag = true; //must this be colour not c?
+                        //std::cout << "Use colour histograms" << std::endl;
+                    }
+                    break;
+                }
                 
             }
         }
@@ -105,7 +133,7 @@ int main(int argc, char* argv[])
         int size = col.read_images(data_folder);
         col.get_colour_images(size);
         int hist_size = col.get_image_features(bin_width, size);
-        std::cout << "Hist Size" << hist_size << std::endl;
+        std::cout << "Hist Size: " << hist_size << std::endl;
 
         //k means
         BLLSAM009::Clusterer c(col); //pass in greyscale feature
@@ -115,6 +143,66 @@ int main(int argc, char* argv[])
         std::ofstream out_file(output_file_name);
         out_file << c << std::endl;
 
+    }
+    else if (two_dim_flag == true)
+    {
+          //read in images and get image features
+        BLLSAM009::Two_D_Feature t;
+        int size = t.read_images(data_folder);
+        t.get_colour_images(size);
+        int hist_size = t.get_image_features(bin_width, size); //Returns hist_size*hist_size*3 because R and B, B and G, G and R
+        std::cout << "Hist Size: " << hist_size << std::endl;
+
+        //k means
+        BLLSAM009::Clusterer c(t); //pass in greyscale feature
+        c.k_means(no_clusters, hist_size); //NO x3
+
+         //write to output file
+        std::ofstream out_file(output_file_name);
+        out_file << c << std::endl;
+
+    }
+    else if (three_dim_flag == true)
+    {
+          //read in images and get image features
+        BLLSAM009::Three_D_Feature t;
+        int size = t.read_images(data_folder);
+        t.get_colour_images(size);
+        std::cout << "Colour images done" << std::endl;
+        int hist_size = t.get_image_features(bin_width, size); //Returns hist_size*hist_size*3 because R and B, B and G, G and R
+        std::cout << "Hist Size: " << hist_size << std::endl;
+
+        //k means
+        BLLSAM009::Clusterer c(t); //pass in greyscale feature
+        c.k_means(no_clusters, hist_size); //NO x3
+
+         //write to output file
+        std::ofstream out_file(output_file_name);
+        out_file << c << std::endl;
+
+    }
+    else if (shape_flag == true)
+    {
+         {
+          //read in images and get image features
+        BLLSAM009::Shape_Feature s;
+        int size = s.read_images(data_folder);
+        s.get_colour_images(size);
+        s.get_image_centres(size);
+        std::cout << "Image centres done" << std::endl;
+        int hist_size = s.get_image_features(bin_width, size); //Returns hist_size*hist_size*3 because R and B, B and G, G and R
+        std::cout << "Hist Size: " << hist_size << std::endl;
+
+          
+        //k means
+        BLLSAM009::Clusterer c(s); //pass in greyscale feature
+        c.k_means(no_clusters, hist_size*3); //make it standaridised whether this is x3 or not
+
+         //write to output file
+        std::ofstream out_file(output_file_name);
+        out_file << c << std::endl;
+
+    }
     }
     else 
     {
@@ -127,8 +215,9 @@ int main(int argc, char* argv[])
         //k means
         BLLSAM009::Clusterer c(g); //pass in greyscale feature
 
-        //to test only
+
         //c.k_meansplusplus_init(no_clusters, hist_size);
+        //std::cout << "Hist Size: " << hist_size << std::endl;
         c.k_means(no_clusters, hist_size);
 
          //write to output file
