@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <memory>
+#include <cstdio>
 #include "grey_feature.h"
  
 
@@ -31,7 +32,7 @@ Grey_Feature::~Grey_Feature()
 
 
 // populate the object with images 
-int Grey_Feature::read_images(const std::string & folder_name)
+/*int Grey_Feature::read_images(const std::string & folder_name)
 {
     int num_images = 10;//how to set this?? POSIX?? - set back to 20
     int size;
@@ -50,6 +51,58 @@ int Grey_Feature::read_images(const std::string & folder_name)
     std::cout << "No of images read " << images.size() << std::endl;
     write_to_output();
     return size; //change this later
+}*/
+
+
+
+std::string Grey_Feature::get_file_names(const std::string & folder_name) const {
+   char buffer[128];
+   std::string command = "ls " + folder_name;
+   std::cout << command << std::endl;
+   std::string result = "";
+
+   // Open pipe to file
+   FILE* pipe = popen(command.c_str(), "r");
+   if (!pipe) {
+      return "popen failed";
+   }
+
+   // read till end of process:
+   while (!feof(pipe)) {
+
+      // use buffer to read and add to result
+      if (fgets(buffer, 128, pipe) != NULL)
+         result += buffer;
+   }
+
+   pclose(pipe);
+   return result;
+}
+
+
+// populate the object with images 
+int Grey_Feature::read_images(const std::string & folder_name)
+{
+    int size;
+    images.clear(); //ensure image vector is empty
+    std::string filenames = get_file_names(folder_name);
+    //std::cout << filenames << std::endl;
+    std::istringstream iss(filenames);
+    std::string image_name;
+    while(iss >> image_name)
+    {
+        //std::cout << image_name << std::endl;
+        std::string image_path = "Gradient_Numbers_PPMS/" + image_name;
+        size  = read_image(image_path);
+        std::size_t suffix_index = image_name.find(".");
+        std::string display_name = image_name.substr(0,suffix_index);
+        image_names.push_back(display_name);
+
+    }
+
+    std::cout << "No of images read " << images.size() << std::endl;
+    write_to_output();
+    return size; //change this later - rather set instance variable and then use a get method?
 }
 
 
@@ -118,7 +171,7 @@ int Grey_Feature::read_image(const std::string & image_name)
 
 
 
-void Grey_Feature::write_to_output()
+void Grey_Feature::write_to_output() const
 {
      
      if (std::remove("out1.ppm") != 0)
@@ -173,7 +226,7 @@ void Grey_Feature::convert_to_grey(int size)
 
 
 //given an input image, convert each pixel to greyscale value
-void Grey_Feature::to_greyscale(int index, int size)
+void Grey_Feature::to_greyscale(const int index, const int size)
 {
         //loop through pixels in image and call colour_conversion  
         //std::unique_ptr<unsigned char []> grey_image(new unsigned char[size]);
@@ -192,7 +245,7 @@ void Grey_Feature::to_greyscale(int index, int size)
 
 
 //convert given R, G, B values to single greyscale value
-unsigned char Grey_Feature::colour_conversion(unsigned char R, unsigned char G, unsigned char B)
+unsigned char Grey_Feature::colour_conversion(const unsigned char R, const unsigned char G, const unsigned char B) const
 {
     //returns a single value per pixel, which ranges from 0 (black) to 255 (white)
     int pixel_out =  (0.21*R) + (0.72*G) + (0.07*B);
@@ -212,7 +265,7 @@ unsigned char Grey_Feature::colour_conversion(unsigned char R, unsigned char G, 
 
 
 //write greyscale image to output to validate conversion
-void Grey_Feature::write_grey_to_output()
+void Grey_Feature::write_grey_to_output() const
 {
      
      if (std::remove("out_grey1.ppm") != 0)
@@ -263,7 +316,7 @@ void Grey_Feature::write_grey_to_output()
 
 
 //NB this assumes size of image is constant
-int Grey_Feature::get_image_features(int bin_size, int size)
+int Grey_Feature::get_image_features(const int bin_size, const int size)
 {
      std::cout << "No. of greyscale images " << greyscale_images.size()  << std::endl;
     //image_features (greyscale_images);
@@ -282,12 +335,12 @@ int Grey_Feature::get_image_features(int bin_size, int size)
             std::cout << image_features[i][j] << " ";
         }
     }*/
-    return hist_size;
+    return hist_size; //how to return this without violating rules? - make a get method?
 }
 
 
 
-void Grey_Feature::create_histogram(int index, int hist_size, int bin, int size)
+void Grey_Feature::create_histogram(const int index, const int hist_size, const int bin, const int size)
 {
     
     //use grey_images 
@@ -312,7 +365,7 @@ void Grey_Feature::create_histogram(int index, int hist_size, int bin, int size)
 
 
 
-void Grey_Feature::group_in_bins(const int frequencies[], int hist_size, int bin_size, int size)
+void Grey_Feature::group_in_bins(const int frequencies[], const int hist_size, const int bin_size, const int size)
 {
     //based on given bin size, group histogram array 
     //std::cout << "Grouping..." << std::endl;
@@ -345,13 +398,13 @@ void Grey_Feature::group_in_bins(const int frequencies[], int hist_size, int bin
 }
 
 
- std::vector<int *>  Grey_Feature::get_image_features()
+ std::vector<int *> Grey_Feature::get_image_features() 
  {
      return image_features;
  }
 
 
-std::vector<std::string>  Grey_Feature::get_image_names()
+std::vector<std::string> Grey_Feature::get_image_names() 
 {
     return image_names;
 }

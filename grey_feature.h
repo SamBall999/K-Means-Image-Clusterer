@@ -28,22 +28,23 @@ namespace BLLSAM009 {
 
 
         //File I/O
-        int read_images(const std::string & folder_name);
+        int read_images(const std::string & folder_name); //how to get this to only be a writer? ??? why is this necessary?
+        std::string get_file_names(const std::string & folder_name) const;
         int read_image(const std::string & image_name);
-        void write_to_output();
+        void write_to_output() const;
         
         //Convert to grey_scale
-        void convert_to_grey(int size);
-        void to_greyscale(int index, int size);
-        unsigned char colour_conversion(unsigned char R, unsigned char G, unsigned char B);
-        void write_grey_to_output();
+        void convert_to_grey(const int size);
+        void to_greyscale(const int index, const int size);
+        unsigned char colour_conversion(const unsigned char R, const unsigned char G, const unsigned char B) const;
+        void write_grey_to_output() const; 
 
         //Generate histogram features
-        int get_image_features(int bin_size, int size);
-        void create_histogram(int index, int hist_size, int bin, int size);
-        void group_in_bins(const int frequencies[], int hist_size, int bin_size, int size);
-        std::vector<int *>  get_image_features();
-        std::vector<std::string>  get_image_names();
+        int get_image_features(const int bin_size, const int size);
+        void create_histogram(const int index, const int hist_size, const int bin, const int size);
+        void group_in_bins(const int frequencies[], const int hist_size, const int bin_size, const int size);
+        std::vector<int *> get_image_features();
+        std::vector<std::string> get_image_names();
 
 
 
