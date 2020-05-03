@@ -203,9 +203,12 @@ void Shape_Feature::get_weighted_centre(const int index, const int size)
         int y = i/width; 
         if(colour_images[index][i]!=0)
         {
-            weighted_x += x;
+            /*weighted_x += x;
             weighted_y += y;
-            sum_of_masses += 1;
+            sum_of_masses += 1;*/
+            weighted_x += x*colour_images[index][i];
+            weighted_y += y*colour_images[index][i];
+            sum_of_masses += colour_images[index][i];
         }
     }
     //std::cout << weighted_x << std::endl;
@@ -255,9 +258,12 @@ void Shape_Feature::get_distances_from_centre(const int index, const int size)
         //only for non-black pixels
         if(colour_images[index][i] != 0)
         {
-            x_dist = x - x_centres[index];
+            x_dist = x - x_centres[index]; //what if i weight these?? - to get around 6 and 9 problem
             y_dist = y - y_centres[index];
-            dist[i] = std::sqrt(std::pow(x_dist, 2) + std::pow(y_dist, 2));
+            //x_dist = (x - x_centres[index])*(colour_images[index][i]); //what if i weight these?? - to get around 6 and 9 problem
+            //y_dist = (y - y_centres[index])*(colour_images[index][i]);
+            dist[i] = std::round(std::sqrt(std::pow(x_dist, 2) + std::pow(y_dist, 2)));
+            std::cout << dist[i] << std::endl;
         }
     }
     distances.push_back(dist); //all distances for either an R, G or B element
@@ -270,6 +276,7 @@ void Shape_Feature::get_distances(const int size)
 {
     distances.clear();
     //y_distances.clear();
+    std::cout << "test" << std::endl;
     for(int i = 0; i < colour_images.size(); i++)
     {
         get_distances_from_centre(i, size);
@@ -321,6 +328,7 @@ int Shape_Feature::get_image_features(const int bin_size, const int size)
     std::cout << "No. of colour images " << (colour_images.size())/3  << std::endl;
     get_distances(size);
     int largest_dist = 21; //make more formal
+    //int largest_dist = 5355;  //(21*255)
     int hist_size = std::ceil((largest_dist+1)/(float)bin_size); //change back if necessary
     for(int i = 0; i < colour_images.size(); i+=3)
     {
@@ -342,6 +350,7 @@ void Shape_Feature::create_histogram(const int index, const int hist_size, const
     //use grey_images 
     //int hist_size = std::ceil((MAX_VAL+1)/bin);
     int largest_dist = 21;
+    //int largest_dist = 5355;
     int frequencies[largest_dist+1]; //initialise a zero array with positions 0-distance to corner
     for (int a = 0; a < (largest_dist+1); a++) 
     {
