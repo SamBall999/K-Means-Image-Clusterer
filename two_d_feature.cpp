@@ -67,7 +67,7 @@ void Two_D_Feature::read_images(const std::string & folder_name)
     std::string image_name;
     while(iss >> image_name)
     {
-        std::string image_path = "Gradient_Numbers_PPMS/" + image_name;
+        std::string image_path = folder_name + "/" + image_name;
         read_image(image_path);
         std::size_t suffix_index = image_name.find(".");
         std::string display_name = image_name.substr(0,suffix_index);
