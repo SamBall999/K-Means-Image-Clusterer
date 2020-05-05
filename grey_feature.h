@@ -15,6 +15,8 @@ namespace BLLSAM009 {
 
         private:
         int MAX_VAL;
+        int size;
+        int hist_size;
         std::vector<unsigned char *> images;
         std::vector<unsigned char *>  greyscale_images;
         std::vector<std::string>  image_names;
@@ -23,28 +25,27 @@ namespace BLLSAM009 {
 
         public:
         //Constructors and Destructors
-        Grey_Feature(void); // default constructor 
-        ~Grey_Feature(void); //destructor
+        Grey_Feature(void); 
+        ~Grey_Feature(void); 
 
 
         //File I/O
-        int read_images(const std::string & folder_name); //how to get this to only be a writer? ??? why is this necessary?
+        void read_images(const std::string & folder_name); 
         std::string get_file_names(const std::string & folder_name) const;
-        int read_image(const std::string & image_name);
-        void write_to_output() const;
+        void read_image(const std::string & image_name);
         
         //Convert to grey_scale
-        void convert_to_grey(const int size);
-        void to_greyscale(const int index, const int size);
+        void convert_to_grey();
+        void to_greyscale(const int index);
         unsigned char colour_conversion(const unsigned char R, const unsigned char G, const unsigned char B) const;
-        void write_grey_to_output() const; 
 
         //Generate histogram features
-        int get_image_features(const int bin_size, const int size);
-        void create_histogram(const int index, const int hist_size, const int bin, const int size);
-        void group_in_bins(const int frequencies[], const int hist_size, const int bin_size, const int size);
+        void get_image_features(const int bin_size);
+        void create_histogram(const int index, const int bin);
+        void group_in_bins(const int frequencies[], const int bin_size);
         std::vector<int *> get_image_features();
         std::vector<std::string> get_image_names();
+        int get_hist_size();
 
 
 

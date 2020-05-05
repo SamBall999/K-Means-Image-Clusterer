@@ -9,7 +9,6 @@
 #include "grey_feature.h"
 #include "colour_feature.h"
 #include "two_d_feature.h"
-#include "three_d_feature.h"
 #include "shape_feature.h"
 
 
@@ -24,9 +23,7 @@ namespace BLLSAM009 {
         std::vector<int *>  cluster_means;
         std::map<int, std::vector<int>> cluster_map;
         bool has_converged;
-
-        //FOR TESTING ONLY
-         std::vector<int> cluster_indexes;
+        std::vector<int> cluster_indexes;
 
 
         public:
@@ -34,7 +31,6 @@ namespace BLLSAM009 {
         Clusterer(Grey_Feature grey);
         Clusterer(Colour_Feature colour);
         Clusterer(Two_D_Feature two_dim);
-        Clusterer(Three_D_Feature three_dim);
         Clusterer(Shape_Feature shape);
         ~Clusterer(void); //destructor
 
@@ -51,20 +47,12 @@ namespace BLLSAM009 {
 
         //Stream operator
         friend std::ostream & operator<<(std::ostream & os, const Clusterer& kt);
-
-        //Testing only
-        void print_hists(int i, int k, int hist_size);
         
-        //std::vector<unsigned int> extract_keys(std::map<unsigned int, int> const& map);
-        //std::vector<int> extract_values(std::map<unsigned int, int> const& map);
-
 
     };
 
 
     std::ostream & operator<<(std::ostream & os, const Clusterer& kt);
-
-
 
 
 

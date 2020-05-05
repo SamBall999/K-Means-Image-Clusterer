@@ -12,12 +12,11 @@
  
 
 
-//NB! Check that memory is managed correctly!!
 
 using namespace BLLSAM009;
 
 
-Colour_Feature::Colour_Feature() // default constructor 
+Colour_Feature::Colour_Feature() 
 {
     
 }
@@ -25,38 +24,15 @@ Colour_Feature::Colour_Feature() // default constructor
 
 Colour_Feature::~Colour_Feature()
 {
-    //clean everything properly OR use special pointers
+    
 }
 
 
-
-// populate the object with images 
-/*int Colour_Feature::read_images(const std::string & folder_name)
-{
-    int num_images = 10;//how to set this?? POSIX?? - set back to 20
-    int size;
-    //std::string prefixes[] = {"eight", "five", "four", "nine", "one", "seven", "six", "three", "two", "zero"};
-    std::string prefixes[] = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
-    images.clear(); //ensure image vector is empty
-    for (int k = 0; k < 10; k++)
-    {
-        for(int i = 1; i <= num_images; i++)
-        {
-            std::string image_name = "Gradient_Numbers_PPMS/" + prefixes[k] + "_" + std::to_string(i) + ".ppm";
-            size  = read_image(image_name);
-            std::string display_name = prefixes[k] + "_" + std::to_string(i) + ".ppm";
-            image_names.push_back(display_name);
-        }
-    }
-    std::cout << "No of images read " << images.size() << std::endl;
-    write_to_output();
-    return size; //change this later
-}*/
-
+//get all file names in given folder
 std::string Colour_Feature::get_file_names(const std::string & folder_name) const {
    char buffer[128];
    std::string command = "ls " + folder_name;
-   std::cout << command << std::endl;
+   std::cout << "Reading images from " << folder_name << std::endl;
    std::string result = "";
 
    // Open pipe to file
@@ -65,7 +41,7 @@ std::string Colour_Feature::get_file_names(const std::string & folder_name) cons
       return "popen failed";
    }
 
-   // read till end of process:
+   // read till end of process
    while (!feof(pipe)) {
 
       // use buffer to read and add to result
@@ -79,52 +55,46 @@ std::string Colour_Feature::get_file_names(const std::string & folder_name) cons
 
 
 // populate the object with images 
-int Colour_Feature::read_images(const std::string & folder_name)
+void Colour_Feature::read_images(const std::string & folder_name)
 {
     int size;
     images.clear(); //ensure image vector is empty
-    std::string filenames = get_file_names(folder_name);
-    //std::cout << filenames << std::endl;
+    std::string filenames = get_file_names(folder_name); //get file names in folder
     std::istringstream iss(filenames);
     std::string image_name;
     while(iss >> image_name)
     {
-        //std::cout << image_name << std::endl;
         std::string image_path = "Gradient_Numbers_PPMS/" + image_name;
-        size  = read_image(image_path);
+        read_image(image_path);
         std::size_t suffix_index = image_name.find(".");
         std::string display_name = image_name.substr(0,suffix_index);
         image_names.push_back(display_name);
 
     }
 
-    std::cout << "No of images read " << images.size() << std::endl;
-    write_to_output();
-    return size; //change this later
+    std::cout << "No. of images read: " << images.size() << std::endl;
+
 }
 
 
 
 
-int Colour_Feature::read_image(const std::string & image_name)
+void Colour_Feature::read_image(const std::string & image_name)
 {
-    //std::cout << "Reading " << image_name << std::endl;
     
     std::ifstream byte_file;
     byte_file.open(image_name, std::ios::binary); 
     if (!byte_file)
     { 
-        std::cout << "Error opening image file" <<std::endl; 
-        return false; //return false if problem reading file
+        std::cout << "Error opening image file" <<std::endl; //if problem reading file
     }
     std::string file_id;
     byte_file >> file_id >> std::ws;
     if(file_id != "P6")
     {
-        std::cout << "Wrong file format" <<std::endl; 
-        return false; //return false if problem reading file
+        std::cout << "Wrong file format" <<std::endl; //if wrong file format
     }
-    //read and discard comment lines - check for #
+    //read and discard comment lines
     std::string line;
     getline(byte_file, line, '\n');
     while(line[0] == '#')//check for comment
@@ -134,98 +104,41 @@ int Colour_Feature::read_image(const std::string & image_name)
     }
     int width;
     int height;
-    //int max_val;
     
     std::istringstream iss(line);
-    iss >> width >> std::ws >> height >> std::ws; //check newlines?
+    iss >> width >> std::ws >> height >> std::ws; 
     byte_file >> MAX_VAL >> std::ws;
-
-
     
 
     int no_elements = height*width*3;
-    char * byte_data = new char[no_elements]; //NB to clean up in destructor
-    //std::unique_ptr<char []> byte_data(new char[size]);
+    char * byte_data = new char[no_elements]; 
     byte_file.read(byte_data, no_elements);
-
     unsigned char * image = (unsigned char *)byte_data;
     images.push_back(image);
     byte_file.close();
 
-
-    //clean up later?? - make into unique pointers later
-    //delete [] byte_data; //clean up allocated memory
-
-    int size = width*height; //return size of greyscale image to be used in future
-    return size;
+    size = width*height; //set size instance variable of greyscale image 
 
     
 }
 
 
 
-
-
-
-
-
-void Colour_Feature::write_to_output() const
-{
-     
-     if (std::remove("out1.ppm") != 0)
-     {
-		std::cout << "File deletion failed" << std::endl;
-     }
-     
-     std::ofstream out_file;
-     out_file.open("out1.ppm", std::ios::binary); 
-     out_file << "P6" << std::endl;
-     out_file << "32 32" << std::endl;
-     out_file << "255" << std::endl;
-     char byte_data[32*32*3];
-     for (int i = 0; i < (32*32*3); i++)
-     {
-         byte_data[i] = (char)images[0][i];
-     }
-     out_file.write(byte_data, (32*32*3));
-
-
-     if (std::remove("out2.ppm") != 0)
-     {
-		std::cout << "File deletion failed" << std::endl;
-     }
-     
-     std::ofstream out_file2;
-     out_file2.open("out2.ppm", std::ios::binary); 
-     out_file2 << "P6" << std::endl;
-     out_file2 << "32 32" << std::endl;
-     out_file2 << "255" << std::endl;
-    char byte_data2[32*32*3];
-     for (int i = 0; i < (32*32*3); i++)
-     {
-         byte_data2[i] = (char)images[1][i];
-     }
-     out_file2.write(byte_data2, (32*32*3));
-
-}
-
-
-void Colour_Feature::get_colour_images(const int size)
+//process each colour image by grouping into R, G and B values
+void Colour_Feature::process_colour_images()
 {
     colour_images.clear();
     int count = 0;
-    std::cout << images.size() << std::endl;
     for(int i = 0; i < images.size(); i++)
     {
-        split_into_RGB(i, size);
+        split_into_RGB(i);
     }
-     std::cout << "No. of colour images " << (colour_images.size())  << std::endl;
 }
 
 
 
-
-void Colour_Feature::split_into_RGB(const int index, const int size)
+//group pixel values into R, G and B for later processing
+void Colour_Feature::split_into_RGB(const int index)
 {
      unsigned char * R_values = new unsigned char[size];
      unsigned char * G_values = new unsigned char[size];
@@ -241,52 +154,37 @@ void Colour_Feature::split_into_RGB(const int index, const int size)
     colour_images.push_back(R_values);
     colour_images.push_back(G_values);
     colour_images.push_back(B_values);
-    /*for (int j = 0; j < size; j++)
-    {
-        std::cout << int(R_values[j]) << " ";
-    }*/
 }
 
 
-//NB this assumes size of image is constant
-int Colour_Feature::get_image_features(const int bin_size, const int size)
+//create histogram feature for each colour image
+void Colour_Feature::calculate_image_features(const int bin_size)
 {
-    std::cout << "No. of colour images " << (colour_images.size())/3  << std::endl;
-    int hist_size = std::ceil((MAX_VAL+1)/(float)bin_size); //change back if necessary
+    process_colour_images();
+    hist_size = std::ceil((MAX_VAL+1)/(float)bin_size); //calculate binned histogram size
     for(int i = 0; i < colour_images.size(); i+=3)
     {
-        create_histogram(i, hist_size, bin_size, size); 
-        create_histogram(i+1, hist_size, bin_size, size); 
-        create_histogram(i+2, hist_size, bin_size, size); 
-        //need a way to concatenate these?
+        create_histogram(i, bin_size); //histogram of R pixels
+        create_histogram(i+1, bin_size); //histogram of G pixels
+        create_histogram(i+2, bin_size); //histogram of B pixels
     }
     //concatenate R, G and B histograms into one feature for each image
-    //int hist_size = 255/bin_size;
-    combine_histograms(hist_size);
-    return hist_size;
+    combine_histograms();
 }
 
 
-void Colour_Feature::combine_histograms(const int hist_size)
+//combine R, G and B histograms into one combined feature
+void Colour_Feature::combine_histograms()
 {
     for(int i = 0; i < image_features.size(); i+=3)
     {   
-       concat_arrays(i, hist_size);
+       concat_arrays(i);
     }
-    std::cout << combined_features.size() << std::endl;
-     /*for(int i = 0; i < combined_features.size(); i+=3)
-    {   
-        //need a way to concatenate these?
-        std::cout << "NEW IMAGE" << i <<  std::endl;
-        for (int j = 0; j < hist_size*3; j++)
-        {
-            std::cout << combined_features[i][j] << " ";
-        }
-    }*/
 }
 
 
-void Colour_Feature::concat_arrays(const int index, const int hist_size)
+//concatenate histogram arrays for the given image
+void Colour_Feature::concat_arrays(const int index)
 {
     int * result = new int[hist_size*3];
     std::copy(image_features[index], image_features[index] + hist_size, result);
@@ -298,13 +196,12 @@ void Colour_Feature::concat_arrays(const int index, const int hist_size)
 
 
 
-//as an extra - draw a pop up histogram??
-void Colour_Feature::create_histogram(const int base_index, const int hist_size, const int bin, const int size)
+//create histogram feature for the given image
+void Colour_Feature::create_histogram(const int base_index, const int bin)
 {
-    
-    //use grey_images 
-    //int hist_size = std::ceil((MAX_VAL+1)/bin);
-    int frequencies[MAX_VAL+1]; //initialise a zero array with positions 0-255
+
+    //initialise a zero array with positions 0-255
+    int frequencies[MAX_VAL+1]; 
     for (int a = 0; a < (MAX_VAL+1); a++) 
     {
         frequencies[a] = 0;
@@ -316,20 +213,15 @@ void Colour_Feature::create_histogram(const int base_index, const int hist_size,
         frequencies[colour_images[base_index][i]]++;
        
     }
-     /*for (int j = 0; j < (maxVal+1); j++)
-    {
-            std::cout << frequencies[j] << " ";
-    }*/
-     group_in_bins(frequencies, hist_size, bin, (MAX_VAL+1));
+     group_in_bins(frequencies, bin);
 
 }
 
 
-
-void Colour_Feature::group_in_bins(const int frequencies[], const int hist_size, const int bin_size, const int size)
+//create a binned histogram based on given bin size
+void Colour_Feature::group_in_bins(const int frequencies[], const int bin_size)
 {
     //based on given bin size, group histogram array 
-    //std::cout << "Grouping..." << std::endl;
     int * hist = new int[hist_size];
 
     //initialise binned histogram
@@ -343,7 +235,7 @@ void Colour_Feature::group_in_bins(const int frequencies[], const int hist_size,
     {
         for (int i = count*bin_size; i < (count+1)*bin_size; i++)
         {
-            if(i > (size-1)) //check for values exceeding max value
+            if(i > MAX_VAL) //check for values exceeding max value
             {
                 break;
             }
@@ -352,23 +244,25 @@ void Colour_Feature::group_in_bins(const int frequencies[], const int hist_size,
 
     }
     image_features.push_back(hist);
-    /*std::cout << "NEW IMAGE" << std::endl;
-    for (int j = 0; j < hist_size; j++)
-    {
-            std::cout << hist[j] << " ";
-    }*/
 
 }
 
-
+//allows clusterer to access the image features
  std::vector<int *> Colour_Feature::get_image_features()
  {
      //return image_features;
      return combined_features;
  }
 
-
+//allows clusterer to access the image names
 std::vector<std::string> Colour_Feature::get_image_names()
 {
     return image_names;
+}
+
+
+//allows clusterer to access the histogram size
+int Colour_Feature::get_hist_size() 
+{
+    return hist_size*3;
 }

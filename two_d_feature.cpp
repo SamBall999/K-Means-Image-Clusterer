@@ -12,13 +12,13 @@
  
 
 
-//NB! Check that memory is managed correctly!!
-//Must remember to delete arrays or use special pointers
+// The idea for creating a two dimensional histogram was inspired by the following resource:
+//https://www.pyimagesearch.com/2014/01/22/clever-girl-a-guide-to-utilizing-color-histograms-for-computer-vision-and-image-search-engines/
 
 using namespace BLLSAM009;
 
 
-Two_D_Feature::Two_D_Feature() // default constructor 
+Two_D_Feature::Two_D_Feature() 
 {
     
 }
@@ -26,14 +26,15 @@ Two_D_Feature::Two_D_Feature() // default constructor
 
 Two_D_Feature::~Two_D_Feature()
 {
-    //clean everything properly OR use special pointers
+   
 }
 
 
+//get all file names in given folder
 std::string Two_D_Feature::get_file_names(const std::string & folder_name) const {
    char buffer[128];
    std::string command = "ls " + folder_name;
-   std::cout << command << std::endl;
+   std::cout << "Reading images from " << folder_name << std::endl;
    std::string result = "";
 
    // Open pipe to file
@@ -56,52 +57,47 @@ std::string Two_D_Feature::get_file_names(const std::string & folder_name) const
 
 
 // populate the object with images 
-int Two_D_Feature::read_images(const std::string & folder_name)
+void Two_D_Feature::read_images(const std::string & folder_name)
 {
     int size;
     images.clear(); //ensure image vector is empty
     std::string filenames = get_file_names(folder_name);
-    //std::cout << filenames << std::endl;
+  
     std::istringstream iss(filenames);
     std::string image_name;
     while(iss >> image_name)
     {
-        //std::cout << image_name << std::endl;
         std::string image_path = "Gradient_Numbers_PPMS/" + image_name;
-        size  = read_image(image_path);
+        read_image(image_path);
         std::size_t suffix_index = image_name.find(".");
         std::string display_name = image_name.substr(0,suffix_index);
         image_names.push_back(display_name);
 
     }
 
-    std::cout << "No of images read " << images.size() << std::endl;
-    write_to_output();
-    return size; //change this later
+    std::cout << "No. of images read: " << images.size() << std::endl;
 }
 
 
 
 
-int Two_D_Feature::read_image(const std::string & image_name)
+void Two_D_Feature::read_image(const std::string & image_name)
 {
-    //std::cout << "Reading " << image_name << std::endl;
     
     std::ifstream byte_file;
     byte_file.open(image_name, std::ios::binary); 
     if (!byte_file)
     { 
-        std::cout << "Error opening image file" <<std::endl; 
-        return false; //return false if problem reading file
+        std::cout << "Error opening image file" <<std::endl;  //if problem reading file
     }
     std::string file_id;
     byte_file >> file_id >> std::ws;
     if(file_id != "P6")
     {
-        std::cout << "Wrong file format" <<std::endl; 
-        return false; //return false if problem reading file
+        std::cout << "Wrong file format" <<std::endl;  //if wrong file format
     }
-    //read and discard comment lines - check for #
+
+    //read and discard comment lines 
     std::string line;
     getline(byte_file, line, '\n');
     while(line[0] == '#')//check for comment
@@ -111,32 +107,22 @@ int Two_D_Feature::read_image(const std::string & image_name)
     }
     int width;
     int height;
-    //int max_val;
     
     std::istringstream iss(line);
-    iss >> width >> std::ws >> height >> std::ws; //check newlines?
+    iss >> width >> std::ws >> height >> std::ws; 
     byte_file >> MAX_VAL >> std::ws;
 
 
-    
-
     int no_elements = height*width*3;
-    char * byte_data = new char[no_elements]; //NB to clean up in destructor
-    //std::unique_ptr<char []> byte_data(new char[size]);
+    char * byte_data = new char[no_elements]; 
     byte_file.read(byte_data, no_elements);
 
     unsigned char * image = (unsigned char *)byte_data;
     images.push_back(image);
     byte_file.close();
 
-
-    //clean up later?? - make into unique pointers later
-    //delete [] byte_data; //clean up allocated memory
-
-    int size = width*height; //return size of greyscale image to be used in future
-    return size;
-
-    
+    size = width*height; 
+  
 }
 
 
@@ -144,65 +130,20 @@ int Two_D_Feature::read_image(const std::string & image_name)
 
 
 
-
-
-void Two_D_Feature::write_to_output() const
-{
-     
-     if (std::remove("out1.ppm") != 0)
-     {
-		std::cout << "File deletion failed" << std::endl;
-     }
-     
-     std::ofstream out_file;
-     out_file.open("out1.ppm", std::ios::binary); 
-     out_file << "P6" << std::endl;
-     out_file << "32 32" << std::endl;
-     out_file << "255" << std::endl;
-     char byte_data[32*32*3];
-     for (int i = 0; i < (32*32*3); i++)
-     {
-         byte_data[i] = (char)images[0][i];
-     }
-     out_file.write(byte_data, (32*32*3));
-
-
-     if (std::remove("out2.ppm") != 0)
-     {
-		std::cout << "File deletion failed" << std::endl;
-     }
-     
-     std::ofstream out_file2;
-     out_file2.open("out2.ppm", std::ios::binary); 
-     out_file2 << "P6" << std::endl;
-     out_file2 << "32 32" << std::endl;
-     out_file2 << "255" << std::endl;
-    char byte_data2[32*32*3];
-     for (int i = 0; i < (32*32*3); i++)
-     {
-         byte_data2[i] = (char)images[1][i];
-     }
-     out_file2.write(byte_data2, (32*32*3));
-
-}
-
-
-void Two_D_Feature::get_colour_images(const int size)
+void Two_D_Feature::process_colour_images()
 {
     colour_images.clear();
     int count = 0;
-    std::cout << images.size() << std::endl;
     for(int i = 0; i < images.size(); i++)
     {
-        split_into_RGB(i, size);
+        split_into_RGB(i);
     }
-     std::cout << "No. of colour images " << (colour_images.size())  << std::endl;
 }
 
 
 
 
-void Two_D_Feature::split_into_RGB(const int index, const int size)
+void Two_D_Feature::split_into_RGB(const int index)
 {
      unsigned char * R_values = new unsigned char[size];
      unsigned char * G_values = new unsigned char[size];
@@ -218,40 +159,32 @@ void Two_D_Feature::split_into_RGB(const int index, const int size)
     colour_images.push_back(R_values);
     colour_images.push_back(G_values);
     colour_images.push_back(B_values);
-    /*for (int j = 0; j < size; j++)
-    {
-        std::cout << int(R_values[j]) << " ";
-    }*/
+
 }
 
 
 
-//NB this assumes size of image is constant
-int Two_D_Feature::get_image_features(const int bin_size, const int size)
+//assumes size of image is constant
+void Two_D_Feature::calculate_image_features(const int bin_size)
 {
-    std::cout << "No. of colour images " << (colour_images.size())/3  << std::endl;
-    int hist_size = std::ceil((MAX_VAL+1)/(float)bin_size); //change back if necessary
+    process_colour_images(); //split into R, G and B arrays
+    int opt_bin_size = OPTIMAL_BIN_WIDTH; //set this to bin_size if want to use user parameter
+    hist_size = std::ceil((MAX_VAL+1)/(float)opt_bin_size); //use optimal bin size for good results
     for(int i = 0; i < colour_images.size(); i+=3)
     {
-        create_2D_histogram(i, i+1, hist_size, bin_size, size); //R and B
-        create_2D_histogram(i+1, i+2, hist_size, bin_size, size); //B and G
-        create_2D_histogram(i+2, i, hist_size, bin_size, size);  //G and R
-        //need a way to concatenate these?
+        create_2D_histogram(i, i+1, opt_bin_size); //R and B
+        create_2D_histogram(i+1, i+2, opt_bin_size); //B and G
+        create_2D_histogram(i+2, i, opt_bin_size);  //G and R
     }
-    //concatenate R, G and B histograms into one feature for each image
-    //int hist_size = 255/bin_size;
-    combine_histograms(hist_size);
-    return hist_size*hist_size*3; //one binned histogram (e.g. R and B) is of size (histogram*histogram)
+    //concatenate R&B, G&B and B&R histograms into one feature for each image
+    combine_histograms();
+
 }
 
 
-//as an extra - draw a pop up histogram??
-void Two_D_Feature::create_2D_histogram(const int axis_1, const int axis_2, const int hist_size, const int bin, const int size)
+
+void Two_D_Feature::create_2D_histogram(const int axis_1, const int axis_2, const int bin)
 {
-    
-    //use grey_images 
-    //int hist_size = std::ceil((MAX_VAL+1)/bin);
-    //int frequencies[MAX_VAL+1][MAX_VAL+1]; //initialise a 2D zero array with positions 0-255
 
     int ** frequencies = new int*[MAX_VAL+1]; 
 
@@ -266,13 +199,6 @@ void Two_D_Feature::create_2D_histogram(const int axis_1, const int axis_2, cons
         }   
     }
 
-    /*for (int a = 0; a < (MAX_VAL+1); a++) 
-    {
-        for (int b = 0; b < (MAX_VAL+1); b++)
-        {
-            frequencies[a][b] = 0;
-        }
-    }*/
 
     //iterate through each pixel
     for (int i = 0; i < (size); i++)
@@ -282,23 +208,16 @@ void Two_D_Feature::create_2D_histogram(const int axis_1, const int axis_2, cons
         frequencies[colour_images[axis_1][i]][colour_images[axis_2][i]]++;
        
     }
-    /*for (int i = 0; i < (MAX_VAL +1); i++)
-    {
-        for(int j = 0; j < (MAX_VAL+1); j++)
-        {
-            std::cout << frequencies[i][j] << " ";
-        }
-    }*/
-    group_in_bins(frequencies, hist_size, bin, (MAX_VAL+1));
+
+    group_in_bins(frequencies, bin);
 
 }
 
 
 
-void Two_D_Feature::group_in_bins(int ** frequencies, const int hist_size, const int bin_size, const int size)
+void Two_D_Feature::group_in_bins(int ** frequencies, const int bin_size)
 {
     //based on given bin size, group histogram array 
-    //std::cout << "Grouping..." << std::endl;
     int ** hist = new int*[hist_size]; 
 
     //initialise binned histogram
@@ -317,7 +236,7 @@ void Two_D_Feature::group_in_bins(int ** frequencies, const int hist_size, const
     {
         for (int i = count*bin_size; i < (count+1)*bin_size; i++)
         {
-            if(i > (size-1)) //check for values exceeding max value
+            if(i > MAX_VAL) //check for values exceeding max value
             {
                 break;
             }
@@ -325,7 +244,7 @@ void Two_D_Feature::group_in_bins(int ** frequencies, const int hist_size, const
             {
                 for (int j = inner_count*bin_size; j < (inner_count+1)*bin_size; j++)
                 {
-                    if(j > (size-1)) //check for values exceeding max value
+                    if(j > MAX_VAL) //check for values exceeding max value
                     {
                         break;
                     }
@@ -336,28 +255,19 @@ void Two_D_Feature::group_in_bins(int ** frequencies, const int hist_size, const
 
     }
     image_features.push_back(hist);
-    /*std::cout << "NEW IMAGE" << std::endl;
-    for (int i = 0; i < hist_size; i++)
-    {
-            for (int j = 0; j < hist_size; j++)
-            {   
-                std::cout << hist[i][j] << " ";
-            }
-    }*/
 
 }
 
-void Two_D_Feature::combine_histograms(const int hist_size)
+void Two_D_Feature::combine_histograms()
 {
     for(int i = 0; i < image_features.size(); i+=3)
     {   
-       concat_arrays(i, hist_size);
+       concat_arrays(i);
     }
-    std::cout << combined_features.size() << std::endl;
 }
 
 
-void Two_D_Feature::concat_arrays(const int index, const int hist_size)
+void Two_D_Feature::concat_arrays(const int index)
 {
     int * result = new int[hist_size*hist_size*3];
 
@@ -380,26 +290,15 @@ void Two_D_Feature::concat_arrays(const int index, const int hist_size)
     std::copy(RB, RB + (hist_size*hist_size), result);
     std::copy(RG, RG + (hist_size*hist_size), result + (hist_size*hist_size));  
     std::copy(GB, GB + (hist_size*hist_size), result + ((hist_size*hist_size)*2));  
-     //std::cout << "NEW IMAGE" << std::endl;
-    /*for (int j = 0; j < (hist_size*hist_size*3); j++)
-    {   
-        std::cout << result[j] << " ";
-    }*/
+  
     combined_features.push_back(result);
 
 }
 
 
-/*// deleting the 2d array
-if (array[k][l] == 2.0 ) 
-for(int i=0; i<rows; ++i)
-{ delete [] array[i]; } // Delete the inner arrays
-delete [] array;*/
-
 
  std::vector<int *> Two_D_Feature::get_image_features()
  {
-     //return image_features;
      return combined_features;
  }
 
@@ -407,4 +306,11 @@ delete [] array;*/
 std::vector<std::string> Two_D_Feature::get_image_names()
 {
     return image_names;
+}
+
+
+//allows clusterer to access the histogram size
+int Two_D_Feature::get_hist_size() 
+{
+    return hist_size*hist_size*3; 
 }
