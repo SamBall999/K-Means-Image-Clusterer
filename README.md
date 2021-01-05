@@ -1,7 +1,7 @@
 # K-Means-Image-Clusterer
 
 
-## PROGRAM STRUCTURE
+## Program Structure
 The K Means Clustering program is comprised of twelve files including 
 - clusterer.h
 - clusterer.cpp
@@ -18,7 +18,7 @@ The K Means Clustering program is comprised of twelve files including
 The program therefore consists of five header files, five source files, a driver file and a make file to compile and run the program.
 Lastly, a sample folder of images Gradient_Numbers_PPMS has been included in order for the default 'make run' command to function correctly.
 
-## FILE DESCRIPTIONS
+## File Descriptions
 The cluster_driver.cpp file contains code needed to parse the command line arguments as well as to create an instance of the desired feature class and the clusterer class. The cluster_driver calls the necessary methods to read in the images, process the images, obtain the features and run the K Means algorithm.
 Lastly, the driver class writes the clusters to the output file as well as to the terminal.
 
@@ -40,7 +40,7 @@ Thus it should be noted that the output file name is expected without a file ext
 This is the most basic form of the program as it uses the most simple features. Improved results are achieved through the addition of flags to use more complex features as discussed below.
 
 
-## COMMAND LINE ARGUMENT FORMAT
+## Command Line Argument Format
 The command line format is as follows:
         clusterer <dataset> [-o output_name] [-k no_clusters] [-bin bin_width] [-<feature_flag>]   
 where <feature_flag> can be:
@@ -52,7 +52,7 @@ If any of the optional fields are left out, the default behaviour for that field
 The default behaviour is defined as 10 clusters, a bin width of 1, greyscale features and the output being written to std::cout.
 It should be noted that only one feature flag can be used at a time. 
 
-## FEATURE HISTOGRAMS
+## Feature Histograms
 ### 1. Greyscale
 The grey_feature.cpp source file contains methods to convert the images to greyscale and then create a histogram of pixel intensities from 0 to 255.
 
