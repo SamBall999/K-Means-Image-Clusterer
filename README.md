@@ -66,9 +66,10 @@ It also contains methods to combine the three histograms into one feature of for
 Two additional features were implemented to improve performance of the clustering algorithm. 
 
 ### 3. Two Dimensional
-In order to improve performance, a two-dimensional colour histogram was implemented. 
+In order to improve performance, a __two-dimensional colour histogram__ was implemented. 
 The basis of this more complex feature is that not only does it describe the distribution of the pixel intensities in each of the R, G and B channels but it also describes the correlation between pairs of channels e.g. between the R and G channels.
 The 2D histogram is computed by grouping the pixel intensities into R, G and B channels and then creating a 2D array counting the frequency of each pixel for each pair of values e.g. for each _(R, G)_ pair.
+
 Three 2D histograms were computed, between R and G, G and B and B and R respectively. The three histograms were then combined into one feature of format _[R_G_2D_hist, G_B_2Dhist, B_R_2Dhist]_.
 Lastly, the combined 2D histogram was flattened into a 1D array for use in the cluster algorithm.
 Using the two dimensional feature, the algorithm was observed to cluster almost perfectly.
@@ -79,7 +80,7 @@ Through experimentation the optimal bin size for this feature was found to be 10
 
 ### 4. Shape 
 Lastly, a feature histogram based on the shape of the image was computed.
-In order to encode spatial information, the centre of mass of each image was calculated in the form _(x_centre, y_centre)_.
+In order to encode spatial information, the __centre of mass__ of each image was calculated in the form _(x_centre, y_centre)_.
 This was performed for each of the R, G and B channels respectively. 
 The distances from each non-zero (colour) pixel to the centre of mass were then calculated and converted into a histogram feature.
 Lastly, the three histograms were combined into one feature of format _[distances_to_centre_R, distances_to_centre_G, distances_to_centre_B]_.
