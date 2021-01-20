@@ -61,15 +61,15 @@ The _grey_feature.cpp_ source file contains methods to convert the images to gre
 
 ### 2. Colour 
 The _colour_feature.cpp_ source file contains methods to group the pixels of each image into R, G and B arrays and then create a histogram of pixel intensities from 0 to 255 for each of the channels.
-It also contains methods to combine the three histograms into one feature of format [R_channel_hist, G_channel_hist, B_channel_hist]. 
+It also contains methods to combine the three histograms into one feature of format _[R_channel_hist, G_channel_hist, B_channel_hist]_. 
 
 Two additional features were implemented to improve performance of the clustering algorithm. 
 
 ### 3. Two Dimensional
 In order to improve performance, a two-dimensional colour histogram was implemented. 
 The basis of this more complex feature is that not only does it describe the distribution of the pixel intensities in each of the R, G and B channels but it also describes the correlation between pairs of channels e.g. between the R and G channels.
-The 2D histogram is computed by grouping the pixel intensities into R, G and B channels and then creating a 2D array counting the frequency of each pixel for each pair of values e.g. for each (R, G) pair.
-Three 2D histograms were computed, between R and G, G and B and B and R respectively. The three histograms were then combined into one feature of format [R_G_2D_hist, G_B_2Dhist, B_R_2Dhist].
+The 2D histogram is computed by grouping the pixel intensities into R, G and B channels and then creating a 2D array counting the frequency of each pixel for each pair of values e.g. for each _(R, G)_ pair.
+Three 2D histograms were computed, between R and G, G and B and B and R respectively. The three histograms were then combined into one feature of format _[R_G_2D_hist, G_B_2Dhist, B_R_2Dhist]_.
 Lastly, the combined 2D histogram was flattened into a 1D array for use in the cluster algorithm.
 Using the two dimensional feature, the algorithm was observed to cluster almost perfectly.
 Through experimentation the optimal bin size for this feature was found to be 10.
@@ -79,10 +79,10 @@ Through experimentation the optimal bin size for this feature was found to be 10
 
 ### 4. Shape 
 Lastly, a feature histogram based on the shape of the image was computed.
-In order to encode spatial information, the centre of mass of each image was calculated in the form (x_centre, y_centre).
+In order to encode spatial information, the centre of mass of each image was calculated in the form _(x_centre, y_centre)_.
 This was performed for each of the R, G and B channels respectively. 
 The distances from each non-zero (colour) pixel to the centre of mass were then calculated and converted into a histogram feature.
-Lastly, the three histograms were combined into one feature of format [distances_to_centre_R, distances_to_centre_G, distances_to_centre_B].
+Lastly, the three histograms were combined into one feature of format _[distances_to_centre_R, distances_to_centre_G, distances_to_centre_B]_.
 Using the shape feature, the algorithm was observed to cluster perfectly for the optimal bin size of 2.
 
  The idea for creating a shape encoding histogram using centre of mass was inspired by the following resource:
