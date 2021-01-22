@@ -1,5 +1,12 @@
 # K-Means-Image-Clusterer
 
+## Objectives
+- Use k-means clustering to group images according to number. 
+- Investigate the use of more advanced features such as two-dimensional histograms and centre of mass.
+- Analyse the effects of different intialisation methods on clustering performance.
+
+<img src="gradient_numbers.png" alt="Example images used as input to the clustering algorithm." width="450"/>
+
 
 ## Program Structure
 The K Means Clustering program is comprised of twelve files including 
